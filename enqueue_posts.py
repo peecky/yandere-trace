@@ -13,6 +13,7 @@ def buildRequestURL(limit, page=1):
 	return '%s/post.xml?limit=%d&page=%d' % (SERVER_BASE_ADDRESS, limit, page)
 
 def executeJob():
+	isFirstTimeToRun = False
 	now = datetime.datetime.now()
 	con = MySQLdb.connect(DB_HOST, DB_USER_NAME, DB_PASSWORD, DB_DB_NAME)
 	cur = con.cursor()
@@ -21,7 +22,8 @@ def executeJob():
 
 	fetchInfo = kvs.get('fetchInfo')
 	if fetchInfo == None:
-		"first time to run"
+		fetchInfo = {}
+		isFirstTimeToRun = True
 		url = buildRequestURL(1, 1)	# start from the first post
 		r = opener.open(url)
 		xmlStr = r.read()
@@ -53,7 +55,9 @@ def executeJob():
 			noMorePosts = True
 		page += 1
 	con.commit()
-	kvs.set('fetchInfo', fetchInfo)
+	if lastPostId > lastFetchedPostId or isFirstTimeToRun:
+		fetchInfo['lastPostId'] = lastPostId
+		kvs.set('fetchInfo', fetchInfo)
 
 if __name__ == '__main__':
 	executeJob()
