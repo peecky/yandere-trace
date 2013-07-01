@@ -6,7 +6,7 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 config = ConfigParser.SafeConfigParser({
 	'FETCH_POST': '3',
-	'ENQUEUE_POSTS': '180',
+	'ENQUEUE_POSTS': '176',
 	'DELETE_OLD_FILES': '4',
 })
 config.read(BASE_PATH + 'config.ini')
