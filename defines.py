@@ -24,6 +24,7 @@ DB_PASSWORD = config.get('database', 'DB_PASSWORD')
 DB_DB_NAME = config.get('database', 'DB_DB_NAME')
 DB_TABLE_PREFIX = config.get('database', 'DB_TABLE_PREFIX')
 
+IMAGE_DATA_PATH = WWW_DATA_PATH
 THUMBNAIL_DATA_PATH = IMAGE_DATA_PATH + 'thumbnail/'
 
 # database
