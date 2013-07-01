@@ -31,6 +31,7 @@ THUMBNAIL_DATA_PATH = IMAGE_DATA_PATH + 'thumbnail/'
 TABLE_PREFETCHING_QUEUE = DB_TABLE_PREFIX + "prefetchingQueue"
 TABLE_POST = DB_TABLE_PREFIX + "post"
 TABLE_BACKGROUND_JOBS = DB_TABLE_PREFIX + "backgroundJob"
+TABLE_KEY_VALUE_STORE = DB_TABLE_PREFIX + "keyValueStore"
 
 FETCH_POST_DURATION = config.getint('background_job_duration', 'FETCH_POST')
 ENQUEUE_POST_DURATION = config.getint('background_job_duration', 'ENQUEUE_POST')
