@@ -1,0 +1,59 @@
+#!/usr/bin/python
+from defines import *
+from common import *
+import MySQLdb
+import datetime
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--job', metavar='jobName', help='run a specipic job forcely')
+args = parser.parse_args()
+
+jobInfos = {
+	'enqueue_posts': {'duration': ENQUEUE_POSTS_DURATION},
+}
+
+def runJob(jobName):
+	unfinishedDatetime = datetime.datetime(1970, 1, 1)
+	now = datetime.datetime.now()
+	cur.execute('insert into ' + TABLE_BACKGROUND_JOBS + ''' set name = %s, beginAt = %s, finishedAt = %s
+		on duplicate key update beginAt = %s, finishedAt = %s''',
+		(jobName, now, unfinishedDatetime, now ,unfinishedDatetime))
+	con.commit()
+	module = __import__(jobName)
+	module.executeJob()
+	now = datetime.datetime.now()
+	cur.execute('update ' + TABLE_BACKGROUND_JOBS + ' set finishedAt = %s where name = %s', (now, jobName))
+	con.commit()
+
+now = datetime.datetime.now()
+con = MySQLdb.connect(DB_HOST, DB_USER_NAME, DB_PASSWORD, DB_DB_NAME)
+cur = con.cursor()
+
+if args.job:
+	jobName = args.job
+	if jobName[-3:] == '.py':
+		jobName = jobName[:-3]
+	if jobName in jobInfos.keys():
+		runJob(jobName)
+else:
+	for jobName in jobInfos.keys():
+		jobDuration = datetime.timedelta(minutes=int(jobInfos[jobName]['duration']), seconds=-15)
+
+		cur.execute('select beginAt, finishedAt from ' + TABLE_BACKGROUND_JOBS + ' where name = %s', jobName)
+		rows = cur.fetchall()
+		needToRun = False
+		if len(rows) == 0:	# never run before
+			needToRun = True
+		else:
+			beginAt = rows[0][0]
+			finishedAt = rows[0][1]
+			if beginAt <= finishedAt:
+				if beginAt + jobDuration <= now:
+					needToRun = True
+			else:
+				delta = now - beginAt
+				if delta >= datetime.timedelta(hours=1):
+					needToRun = True
+		if needToRun:
+			runJob(jobName)

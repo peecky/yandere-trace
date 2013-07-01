@@ -6,7 +6,7 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 config = ConfigParser.SafeConfigParser({
 	'FETCH_POST': '3',
-	'ENQUEUE_POST': '47',
+	'ENQUEUE_POSTS': '180',
 	'DELETE_OLD_FILES': '4',
 })
 config.read(BASE_PATH + 'config.ini')
@@ -34,7 +34,7 @@ TABLE_BACKGROUND_JOBS = DB_TABLE_PREFIX + "backgroundJob"
 TABLE_KEY_VALUE_STORE = DB_TABLE_PREFIX + "keyValueStore"
 
 FETCH_POST_DURATION = config.getint('background_job_duration', 'FETCH_POST')
-ENQUEUE_POST_DURATION = config.getint('background_job_duration', 'ENQUEUE_POST')
+ENQUEUE_POSTS_DURATION = config.getint('background_job_duration', 'ENQUEUE_POSTS')
 DELETE_OLD_FILES_DURATION = config.getint('background_job_duration', 'DELETE_OLD_FILES')
 
 FETCH_POST_MAX_RETRY = 5
