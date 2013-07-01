@@ -50,7 +50,7 @@ def executeJob():
 			if postId > lastPostId:
 				lastPostId = postId
 			"add to the prefetching queue"
-			cur.execute('insert into ' + TABLE_PREFETCHING_QUEUE + ' set postInfo = %s, addedDate = %s', (pickle.dumps(postInfo, PICKLE_PROTOCOL), now))
+			cur.execute('insert into ' + TABLE_PREFETCHING_QUEUE + ' set postInfo = %s, addedDate = %s, memo = %s', (pickle.dumps(postInfo, PICKLE_PROTOCOL), now, ''))
 		if len(postsInfoXML) < limit:
 			noMorePosts = True
 		page += 1
