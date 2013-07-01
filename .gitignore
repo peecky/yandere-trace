@@ -3,3 +3,4 @@
 *.pyc
 _*.php
 _*.py
+config.ini
