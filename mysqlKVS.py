@@ -1,7 +1,7 @@
 import MySQLdb
 import cPickle as pickle
 
-class MySQLKeyValueStore:
+class MySQLKeyValueStore(object):
 	def __init__(self, connection=None, tableName=None):
 		if connection != None:
 			self._connection = connection
@@ -11,11 +11,21 @@ class MySQLKeyValueStore:
 	def makeConnection(self, host, userName, password, dbName):
 		self._connection = MySQLdb.connect(host, userName, password, dbName)
 
-	def setConnection(self, connection):
-		self._connection = connection
+	@property
+	def connection(self):
+		return self._connection
 
-	def setTableName(self, tableName):
-		self._tableName = tableName
+	@connection.setter
+	def connection(self, value):
+		self._connection = value
+
+	@property
+	def tableName(self):
+		return self._tableName
+
+	@tableName.setter
+	def tableName(self, value):
+		self._tableName = value
 
 	def get(self, key, defalutValue=None):
 		return self.__class__.getValue(self._connection, self._tableName, key, defalutValue)
@@ -23,8 +33,8 @@ class MySQLKeyValueStore:
 	def set(self, key, value, doCommit=True):
 		self.__class__.setValue(self._connection, self._tableName, key, value, doCommit)
 
-	@classmethod
-	def getValue(cls, connection, tableName, key, defalutValue=None):
+	@staticmethod
+	def getValue(connection, tableName, key, defalutValue=None):
 		cur = connection.cursor()
 		cur.execute('select value from ' + tableName + ' where `key` = %s', (key,))
 		values = cur.fetchall()
@@ -32,8 +42,8 @@ class MySQLKeyValueStore:
 			return defalutValue
 		return pickle.loads(values[0][0])
 
-	@classmethod
-	def setValue(cls, connection, tableName, key, value, doCommit=True):
+	@staticmethod
+	def setValue(connection, tableName, key, value, doCommit=True):
 		pickledvalue = pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
 		cur = connection.cursor()
 		cur.execute('insert into ' + tableName + ' set `key` = %s, value = %s on duplicate key update value = %s', (key, pickledvalue, pickledvalue))
