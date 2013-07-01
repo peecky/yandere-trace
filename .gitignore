@@ -1,0 +1,5 @@
+*.DS_Store
+/www/data/
+*.pyc
+_*.php
+_*.py
