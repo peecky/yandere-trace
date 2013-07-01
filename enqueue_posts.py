@@ -25,8 +25,8 @@ def executeJob():
 		url = buildRequestURL(1, 1)	# start from the first post
 		r = opener.open(url)
 		xmlStr = r.read()
-		root = ElementTree.fromstring(xmlStr)
-		lastFetchedPostId = int(root[0].attrib['id'])
+		postsInfoXML = ElementTree.fromstring(xmlStr)
+		lastFetchedPostId = int(postsInfoXML[0].attrib['id'])
 	else:
 		lastFetchedPostId = fetchInfo['lastPostId']
 
@@ -34,12 +34,13 @@ def executeJob():
 	page = 1
 	noMorePosts = False
 	while not noMorePosts:
-		url = '%s/post.xml?limit=%d&page=%d' % (SERVER_BASE_ADDRESS, 35, page)
+		limit = 35
+		url = '%s/post.xml?limit=%d&page=%d' % (SERVER_BASE_ADDRESS, limit, page)
 		r = opener.open(url)
 		xmlStr = r.read()
-		root = ElementTree.fromstring(xmlStr)
-		for i in range(0, len(root)):
-			postInfo = root[i].attrib
+		postsInfoXML = ElementTree.fromstring(xmlStr)
+		for i in range(0, len(postsInfoXML)):
+			postInfo = postsInfoXML[i].attrib
 			postId = int(postInfo['id'])
 			if postId <= lastFetchedPostId:
 				noMorePosts = True
@@ -48,6 +49,8 @@ def executeJob():
 				lastPostId = postId
 			"add to the prefetching queue"
 			cur.execute('insert into ' + TABLE_PREFETCHING_QUEUE + ' set postInfo = %s, addedDate = %s', (pickle.dumps(postInfo, PICKLE_PROTOCOL), now))
+		if len(postsInfoXML) < limit:
+			noMorePosts = True
 		page += 1
 	con.commit()
 	kvs.set('fetchInfo', fetchInfo)
