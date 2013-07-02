@@ -4,6 +4,9 @@ $setting = parse_ini_file("../config.ini");
 define("WWW_DATA_PATH", $setting['WWW_DATA_PATH']);
 define("WWW_LIB_PATH", $setting['WWW_LIB_PATH']);
 
+define("THUMBNAIL_DATA_PATH", WWW_DATA_PATH . "thumbnail/");
+define("ORIGINAL_SERVER_BASE_ADDRESS", $setting['SERVER_BASE_ADDRESS']);
+
 define("DB_HOST", $setting['DB_HOST']);
 define("DB_USER_NAME", $setting['DB_USER_NAME']);
 define("DB_PASSWORD", $setting['DB_PASSWORD']);

@@ -121,4 +121,12 @@ window.addEventListener('DOMContentLoaded', function() {
 	<a href="javascript:navigator.id.logout()">sign out</a>
 <?php }
 }
+
+function thumbmailPath($postInfo) {
+	return THUMBNAIL_DATA_PATH . $postInfo["filename"];
+}
+
+function originalPostUrl($postInfo) {
+	return ORIGINAL_SERVER_BASE_ADDRESS . "/post/show/" . $postInfo["postId"];
+}
 ?>
