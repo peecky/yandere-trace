@@ -14,10 +14,10 @@ def executeJob():
 	cur = con.cursor()
 	opener = buildHTTPOpener()
 
-	cur.execute('select postInfo from ' +TABLE_PREFETCHING_QUEUE  + ' order by addedDate limit 8')
+	cur.execute('select postId, postInfo from ' + TABLE_PREFETCHING_QUEUE  + ' order by addedDate, postId limit 8')
 	for row in cur.fetchall():
-		postInfo = pickle.loads(row[0])
-		postId = int(postInfo['id'])
+		postId = row[0]
+		postInfo = pickle.loads(row[1])
 		filename = postInfo['md5']
 
 		# download thumbnail image
@@ -43,6 +43,7 @@ def executeJob():
 			on duplicate key update
 			postId = %s''',
 			(postId, now, postId))
+		cur.execute('delete from ' + TABLE_PREFETCHING_QUEUE + ' where postId = %s', (postId, ))
 		con.commit()
 
 if __name__ == '__main__':

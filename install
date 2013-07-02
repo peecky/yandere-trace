@@ -8,6 +8,7 @@ con = MySQLdb.connect(DB_HOST, DB_USER_NAME, DB_PASSWORD, DB_DB_NAME)
 with con:
 	cur = con.cursor()
 	cur.execute("""create table if not exists %s (
+		postId INT not null,
 		postInfo MEDIUMBLOB not null,
 		addedDate datetime not null,
 		memo VARCHAR(4096) not null,
