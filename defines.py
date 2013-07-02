@@ -35,6 +35,7 @@ TABLE_KEY_VALUE_STORE = DB_TABLE_PREFIX + "keyValueStore"
 TABLE_USER = DB_TABLE_PREFIX + "user"
 TABLE_USER_AUTH = DB_TABLE_PREFIX + "userAuth"
 TABLE_USER_SESSION = DB_TABLE_PREFIX + "userSession"
+TABLE_ACTIVE_ITEM = DB_TABLE_PREFIX + "activeItem"
 
 FETCH_POST_DURATION = config.getint('background_job_duration', 'FETCH_POST')
 ENQUEUE_POSTS_DURATION = config.getint('background_job_duration', 'ENQUEUE_POSTS')

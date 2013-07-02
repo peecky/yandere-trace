@@ -15,6 +15,7 @@ define("TABLE_ACTIVE_ITEM", DB_TABLE_PREFIX . "activeItem");
 define("TABLE_USER", DB_TABLE_PREFIX . "user");
 define("TABLE_USER_AUTH", DB_TABLE_PREFIX . "userAuth");
 define("TABLE_USER_SESSION", DB_TABLE_PREFIX . "userSession");
+define("TABLE_ACTIVE_ITEM", DB_TABLE_PREFIX . "activeItem");
 
 define("USER_AUTH_KEY_HASH_SALT", $setting['USER_AUTH_KEY_HASH_SALT']);
 

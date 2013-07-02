@@ -47,3 +47,11 @@ with con:
 		date datetime not null,
 		INDEX (userId)
 	)""" % (TABLE_USER_SESSION))
+	cur.execute("""create table if not exists %s (
+		userId INT not null,
+		postId INT not null,
+		isRead bool not null,
+		updateDate datetime not null,
+		INDEX (userId),
+		UNIQUE (userId, postId)
+	)""" % (TABLE_ACTIVE_ITEM))
