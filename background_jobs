@@ -11,6 +11,7 @@ args = parser.parse_args()
 
 jobInfos = {
 	'enqueue_posts': {'duration': ENQUEUE_POSTS_DURATION},
+	'fetch_post': {'duration': FETCH_POST_DURATION},
 }
 
 def runJob(jobName):
