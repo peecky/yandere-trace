@@ -44,7 +44,7 @@ if ($session["isNormalUser"]) {
 <?php for ($i = 0, $loops = count($posts); $i < $loops; $i++) { ?>
 		<li><a href="<?= originalPostUrl($posts[$i]) ?>"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></a>
 			<div class="postOptions">
-				<span><label><input type="checkbox" name="read_<?= $posts[$i]["postId"] ?>" />read</label></span>
+				<span><label><input type="checkbox" name="read_<?= $posts[$i]["postId"] ?>" checked="checked" />read</label></span>
 			</div>
 		</li>
 <?php } ?>
