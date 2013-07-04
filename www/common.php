@@ -24,6 +24,8 @@ define("USER_AUTH_KEY_HASH_SALT", $setting['USER_AUTH_KEY_HASH_SALT']);
 define("AUTH_TYPE_NONE", 0);
 define("AUTH_TYPE_PERSONA", 1);
 
+define("PAGING_UNIT", 32);
+
 $values = array(
 	"title" => $setting['WEBSITE_TITLE']
 );

@@ -5,14 +5,26 @@ require_once("function.php");
 if ($session["isNormalUser"]) {
 	$mysql = &getMysqlUtil();
 	$userId = $session["userId"];
+	$page = getGet("page", 0);
+	if (!is_numeric($page) || $page < 0) $page = 0;
 
 	$posts = $mysql->query("select p.id postId, p.filename, p.prefetched from " . TABLE_ACTIVE_ITEM . " ai, " . TABLE_POST . " p
 		where ai.userId = :userId
 		and ai.isRead = FALSE
 		and ai.postId = p.id
-		order by p.id", array(
+		order by p.id
+		limit " . PAGING_UNIT * $page . ", " . PAGING_UNIT, array(
 		":userId" => $userId
 	));
+
+	// paging URL
+	$urlPath = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
+	parse_str($_SERVER["QUERY_STRING"], $urlQuery);
+	$urlQuery["page"] = ($page > 0) ? $page - 1 : 0;
+	$values["pagePreview"] = $urlPath . "?" . http_build_query($urlQuery);
+	$urlQuery["page"] = $page + 1;
+	$values["pageNext"] = $urlPath . "?" . http_build_query($urlQuery);
+	$formInputs = '<input type="hidden" name="page" value="' . $page . '" />';
 }
 ?>
 <!DOCTYPE html>
@@ -39,7 +51,13 @@ if ($session["isNormalUser"]) {
 	</ul>
 		<p><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read</p>
 		<input type="hidden" name="action" value="markPosts" />
+		<?= $formInputs ?>
 	</form>
+</section>
+
+<section id="bottom">
+	<a href="<?= htmlspecialchars($values["pagePreview"]) ?>">preview</a>
+	<a href="<?= htmlspecialchars($values["pageNext"]) ?>">next</a>
 </section>
 </body>
 </html>

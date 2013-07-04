@@ -145,7 +145,8 @@ case "markPosts": {
 		if (!$result) exit("error: set item as read, " . $mysql->getLastErrorMessage());
 	}
 
-	$redirectURL = "/view.php";
+	$page = getPost("page");
+	$redirectURL = "/view.php?page=$page";
 	header("Location: $redirectURL");
 }
 break;
