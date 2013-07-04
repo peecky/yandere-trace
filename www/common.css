@@ -1,0 +1,6 @@
+ul, li	{ margin: 0; padding: 0; list-style: none; }
+
+section#previews ul.thumbnail li	{ display: inline-block; vertical-align: middle; text-align: center; }
+section#previews ul.thumbnail li:hover	{ background-color: #DDD; }
+section#previews ul.thumbnail li a	{ display: block; padding: 0.5em; }
+section#previews ul.thumbnail li img	{ vertical-align: middle; }

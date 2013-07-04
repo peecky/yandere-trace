@@ -20,6 +20,7 @@ if ($session["isNormalUser"]) {
 <head>
 <meta charset="UTF-8" />
 <title><?= htmlspecialchars($values["title"]) ?></title>
+<link rel="stylesheet" href="common.css" />
 </head>
 <body id="top">
 <h1><a href="/"><?= htmlspecialchars($values["title"]) ?></a></h1>
