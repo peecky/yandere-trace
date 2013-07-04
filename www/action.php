@@ -118,6 +118,38 @@ case "signup": {
 }
 break;
 
+case "markPosts": {
+	$readPostBindParam = array();
+	$i = 0;
+	foreach ($_POST as $key => $value) {
+		if (preg_match('/read_(\d+)/', $key, $matches)) {
+			if (!empty($value)) {
+				$readPostBindParam[":postId_$i"] = $matches[1];
+			}
+		}
+		$i++;
+	}
+
+	if (!empty($readPostBindParam)) {
+		$readPostBindString = implode(", ", array_keys($readPostBindParam));
+		$sql = "update " . TABLE_ACTIVE_ITEM . " ai, " . TABLE_POST . " p set
+			ai.isRead = TRUE,
+			ai.updateDate = FROM_UNIXTIME(:now),
+			p.lastActiveDate = FROM_UNIXTIME(:now)
+			where ai.userId = :userId
+			and ai.postId in ($readPostBindString)
+			and ai.postId = p.id";
+		$readPostBindParam[":userId"] = $userId;
+		$readPostBindParam[":now"] = $now;
+		$result = $mysql->query($sql, $readPostBindParam);
+		if (!$result) exit("error: set item as read, " . $mysql->getLastErrorMessage());
+	}
+
+	$redirectURL = "/view.php";
+	header("Location: $redirectURL");
+}
+break;
+
 default: {
 	exit("unkown action: " . htmlspecialchars($_POST["action"]));
 }

@@ -27,11 +27,19 @@ if ($session["isNormalUser"]) {
 
 <section id="previews">
 	<h2>Preview</h2>
+	<form method="post" action="action.php">
 	<ul class="thumbnail">
 <?php for ($i = 0, $loops = count($posts); $i < $loops; $i++) { ?>
-		<li><a href="<?= originalPostUrl($posts[$i]) ?>"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></a></li>
+		<li><a href="<?= originalPostUrl($posts[$i]) ?>"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></a>
+			<div class="postOptions">
+				<span><label><input type="checkbox" name="read_<?= $posts[$i]["postId"] ?>" />read</label></span>
+			</div>
+		</li>
 <?php } ?>
 	</ul>
+		<p><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read</p>
+		<input type="hidden" name="action" value="markPosts" />
+	</form>
 </section>
 </body>
 </html>
