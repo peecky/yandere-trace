@@ -33,6 +33,9 @@ if ($session["isNormalUser"]) {
 <meta charset="UTF-8" />
 <title><?= htmlspecialchars($values["title"]) ?></title>
 <link rel="stylesheet" href="common.css" />
+<script src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script><?php // required by jquery.noreferrer.js ?>
+<script src="jquery.noreferrer.js"></script>
 </head>
 <body id="top">
 <h1><a href="/"><?= htmlspecialchars($values["title"]) ?></a></h1>
@@ -42,7 +45,7 @@ if ($session["isNormalUser"]) {
 	<form method="post" action="action.php">
 	<ul class="thumbnail">
 <?php for ($i = 0, $loops = count($posts); $i < $loops; $i++) { ?>
-		<li><a href="<?= originalPostUrl($posts[$i]) ?>"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></a>
+		<li><a href="<?= originalPostUrl($posts[$i]) ?>" rel="noreferrer" target="_blank"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></a>
 			<div class="postOptions">
 				<span><label><input type="checkbox" name="read_<?= $posts[$i]["postId"] ?>" checked="checked" />read</label></span>
 			</div>
