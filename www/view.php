@@ -8,7 +8,7 @@ if ($session["isNormalUser"]) {
 	$page = getGet("page", 0);
 	if (!is_numeric($page) || $page < 0) $page = 0;
 
-	$posts = $mysql->query("select p.id postId, p.filename, p.prefetched from " . TABLE_ACTIVE_ITEM . " ai, " . TABLE_POST . " p
+	$posts = $mysql->query("select p.id postId, p.filename, p.createdDate, p.prefetched from " . TABLE_ACTIVE_ITEM . " ai, " . TABLE_POST . " p
 		where ai.userId = :userId
 		and ai.isRead = FALSE
 		and ai.postId = p.id
@@ -48,6 +48,9 @@ if ($session["isNormalUser"]) {
 		<li><a href="<?= originalPostUrl($posts[$i]) ?>" rel="noreferrer" target="_blank"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></a>
 			<div class="postOptions">
 				<span><label><input type="checkbox" name="read_<?= $posts[$i]["postId"] ?>" checked="checked" />read</label></span>
+			</div>
+			<div class="postInfo">
+				<span class="date"><?= $posts[$i]["createdDate"] ?></span>
 			</div>
 		</li>
 <?php } ?>

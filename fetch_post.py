@@ -19,6 +19,7 @@ def executeJob():
 		postId = row[0]
 		postInfo = pickle.loads(row[1])
 		filename = postInfo['md5']
+		createdDate = datetime.datetime.fromtimestamp(int(postInfo['created_at']))
 
 		# download thumbnail image
 		thumbnailUrl = postInfo['preview_url']
@@ -32,10 +33,10 @@ def executeJob():
 
 		# update DataBase
 		cur.execute('insert into ' + TABLE_POST + ''' set
-			id = %s, filename = %s, prefetched = %s, lastActiveDate = %s
+			id = %s, filename = %s, createdDate = %s, prefetched = %s, lastActiveDate = %s
 			on duplicate key update
-			filename = %s, prefetched = %s, lastActiveDate = %s''',
-			(postId, filename, True, now, filename, True, now))
+			filename = %s, createdDate = %s, prefetched = %s, lastActiveDate = %s''',
+			(postId, filename, createdDate, True, now, filename, createdDate, True, now))
 		cur.execute('insert into ' + TABLE_ACTIVE_ITEM + ''' (userId, postId, isRead, updateDate)
 				(select id, %s, FALSE, %s
 				from ''' + TABLE_USER + '''
