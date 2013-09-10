@@ -25,7 +25,7 @@ def executeJob():
 		thumbnailUrl = postInfo['preview_url']
 		localPath = THUMBNAIL_DATA_PATH + filename
 		if not os.path.isfile(localPath) or os.path.getsize(localPath) == 0:
-			r = opener.open(thumbnailUrl)
+			r = robustHTTPRequest(opener, thumbnailUrl)
 			buffer_ =  r.read()
 			downloadingFile = open(localPath, 'wb')
 			downloadingFile.write(buffer_)
