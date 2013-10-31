@@ -2,6 +2,8 @@ from defines import *
 import urllib2, cookielib
 import time
 import logging
+import httplib
+import socket
 
 def buildHTTPOpener():
 	cj = cookielib.CookieJar()
