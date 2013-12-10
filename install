@@ -19,6 +19,7 @@ with con:
 		filename VARCHAR(255) not null,
 		createdDate datetime not null,
 		prefetched bool not null,
+		memo VARCHAR(4096) not null,
 		lastActiveDate datetime not null
 	)""" % (TABLE_POST))
 	cur.execute("""create table if not exists %s (

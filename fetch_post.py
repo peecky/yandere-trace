@@ -30,6 +30,9 @@ def executeJob():
 		addedDate = row[3]
 		filename = postInfo['md5']
 		createdDate = datetime.datetime.fromtimestamp(int(postInfo['created_at']))
+		postMemo = {
+			'sample_url': postInfo['sample_url']
+		}
 
 		try:
 			# download thumbnail image
@@ -43,11 +46,12 @@ def executeJob():
 				downloadingFile.close()
 
 			# update DataBase
+			jsonPostMemo = json.dumps(postMemo)
 			cur.execute('insert into ' + TABLE_POST + ''' set
-				id = %s, filename = %s, createdDate = %s, prefetched = %s, lastActiveDate = %s
+				id = %s, filename = %s, createdDate = %s, prefetched = %s, lastActiveDate = %s, memo = %s
 				on duplicate key update
-				filename = %s, createdDate = %s, prefetched = %s, lastActiveDate = %s''',
-				(postId, filename, createdDate, True, now, filename, createdDate, True, now))
+				filename = %s, createdDate = %s, prefetched = %s, lastActiveDate = %s, memo = %s''',
+				(postId, filename, createdDate, True, now, jsonPostMemo, filename, createdDate, True, now, jsonPostMemo))
 			cur.execute('insert into ' + TABLE_ACTIVE_ITEM + ''' (userId, postId, isRead, updateDate)
 					(select id, %s, FALSE, %s
 					from ''' + TABLE_USER + '''
