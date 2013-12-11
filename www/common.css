@@ -6,7 +6,7 @@ section#previews ul.thumbnail li span.thumbnailImage	{ display: block; padding: 
 section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middle; cursor: pointer; }
 
 section#samples	{ max-width: 100%; }
-section#samples img	{ max-width: 100%; cursor: pointer; }
+section#samples img	{ display: block; max-width: 100%; min-width: 300px; min-height: 300px; cursor: pointer; }
 
 @media (min-width: 1025px) {
 	html, body	{ margin: 0; padding: 0; height: 100%; }

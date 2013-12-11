@@ -17,6 +17,12 @@ if ($session["isNormalUser"]) {
 		":userId" => $userId
 	));
 
+	if (getGet("ajax")) {
+		header('Content-type: application/json');
+		echo json_encode($posts);
+		exit();
+	}
+
 	// paging URL
 	$urlPath = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 	parse_str($_SERVER["QUERY_STRING"], $urlQuery);
@@ -58,6 +64,7 @@ if ($session["isNormalUser"]) {
 	</ul>
 		<p><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read</p>
 		<input type="hidden" name="action" value="markPosts" />
+		<input type="hidden" name="ajax" value="" />
 		<?= $formInputs ?>
 	</form>
 </section>
@@ -72,6 +79,17 @@ if ($session["isNormalUser"]) {
 
 <script>
 (function() {
+var THUMBNAIL_DATA_PATH = "<?= THUMBNAIL_DATA_PATH ?>";
+var ORIGINAL_SERVER_BASE_ADDRESS = "<?= ORIGINAL_SERVER_BASE_ADDRESS ?>";
+
+function thumbmailPath(postInfo) {
+	return THUMBNAIL_DATA_PATH + postInfo.filename;
+}
+
+function originalPostUrl(postInfo) {
+	return ORIGINAL_SERVER_BASE_ADDRESS + "/post/show/" + postInfo.postId;
+}
+
 var postMemos = {
 <?php for ($i = 0, $loops = count($posts); $i < $loops; $i++) {
 	if ($i > 0) echo ",\n";
@@ -98,13 +116,19 @@ function processRequest() {
 			processRequest();
 		})
 		.click(function() {
-			$(this).remove();
+			var $this = $(this);
+			var position = $this.position();
+			if (position.top < 0) {
+				var scrollTop = $this.parent().scrollTop();
+				$this.parent().scrollTop(scrollTop + position.top);
+			}
+			$this.remove();
 		})
 		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url)
 		.appendTo($('#samples'));
 }
 
-$('#previews ul.thumbnail .thumbnailImage img').click(function() {
+function onThumbnailImageClick() {
 	var postId = this.alt;
 	if (!postMemos[postId] || !postMemos[postId].sample_url) {
 		alert("sample url not found");
@@ -112,6 +136,42 @@ $('#previews ul.thumbnail .thumbnailImage img').click(function() {
 	}
 	requestQueue.push(postId);
 	processRequest();
+}
+
+$('#previews ul.thumbnail .thumbnailImage img').click(onThumbnailImageClick);
+
+$('#previews form').submit(function(event) {
+	event.preventDefault();
+
+	var $this = $(this)
+		.find('input[name=ajax]').val(1)
+		.end()
+	$.post($this.attr('action'), $this.serialize(), function(data) {
+		alert(data);
+		var success = false;
+		try {
+			success = (data.status === 0);
+		}
+		catch (e) {}
+		if (!success) alert(data);
+		else {
+			$('#previews ul.thumbnail').empty();
+			postMemos = {};
+
+			$.getJSON(window.location.href, {ajax: 1}, function(posts) {
+				for (var i = 0; i < posts.length; ++i) {
+					var postId = posts[i].postId;
+					var postMemo = posts[i].postMemo;
+					if (postMemo) postMemos[postId] = eval('(' + postMemo + ')');
+					else postMemos[postId] = null;
+
+					$('<li><span class="thumbnailImage"><img src="' + thumbmailPath(posts[i]) + '" alt="' + posts[i].postId + '" /></span><div class="postOptions"><span><label><input type="checkbox" name="read_' + posts[i].postId + '" checked="checked" />read</label></span></div><div class="postInfo"><a href="' + originalPostUrl(posts[i]) + '" rel="noreferrer" target="_blank">See Original</a><span class="date">' + posts[i].createdDate + '</span></div></li>')
+						.appendTo('#previews ul.thumbnail')
+						.find('.thumbnailImage img').click(onThumbnailImageClick)
+				}
+			});
+		}
+	});
 });
 })();
 </script>

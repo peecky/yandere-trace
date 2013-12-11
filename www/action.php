@@ -145,9 +145,15 @@ case "markPosts": {
 		if (!$result) exit("error: set item as read, " . $mysql->getLastErrorMessage());
 	}
 
-	$page = getPost("page");
-	$redirectURL = "/view.php?page=$page";
-	header("Location: $redirectURL");
+	if (!empty($_POST["ajax"])) {
+		header('Content-type: application/json');
+		echo '{"status": 0}';
+	}
+	else {
+		$page = getPost("page");
+		$redirectURL = "/view.php?page=$page";
+		header("Location: $redirectURL");
+	}
 }
 break;
 
