@@ -3,8 +3,10 @@ ul, li	{ margin: 0; padding: 0; list-style: none; }
 section#previews ul.thumbnail li	{ display: inline-block; vertical-align: middle; text-align: center; }
 section#previews ul.thumbnail li:hover	{ background-color: #DDD; }
 section#previews ul.thumbnail li span.thumbnailImage	{ display: block; padding: 0.5em; }
-section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middle; }
+section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middle; cursor: pointer; }
 
+section#samples	{ max-width: 100%; }
+section#samples img	{ max-width: 100%; cursor: pointer; }
 
 @media (min-width: 1025px) {
 	html, body	{ margin: 0; padding: 0; height: 100%; }
@@ -12,10 +14,6 @@ section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middl
 	section#previews	{ display: inline-block; width: 350px; height: 100%; overflow: auto; }
 	section#previews h2	{ visibility: hidden; }
 	section#previews ul.thumbnail li	{ width: 100%; }
-	section#previews ul.thumbnail li span.thumbnailImage img	{ cursor: pointer; }
 
-	section#samples	{ display: inline-block; max-width: 100%; width: 1500px; height: 100%; overflow: auto; }
-	section#samples img	{ max-width: 100%; }
-
-	section#bottom	{ clear: both; }
+	section#samples	{ display: inline-block; width: 1500px; height: 100%; overflow: auto; }
 }
