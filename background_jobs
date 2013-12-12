@@ -13,6 +13,7 @@ jobInfos = {
 	'enqueue_posts': {'duration': ENQUEUE_POSTS_DURATION},
 	'fetch_post': {'duration': FETCH_POST_DURATION},
 	'delete_old_data': {'duration': DELETE_OLD_DATA_DURATION},
+	'clean_inactive_session': {'duration': CLEAN_INACTIVE_SESSION_DURATION},
 }
 
 def runJob(jobName):

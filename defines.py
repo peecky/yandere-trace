@@ -8,6 +8,7 @@ config = ConfigParser.SafeConfigParser({
 	'FETCH_POST': '3',
 	'ENQUEUE_POSTS': '176',
 	'DELETE_OLD_DATA': '1500',
+	'CLEAN_INACTIVE_SESSION': '3000',
 })
 config.read(BASE_PATH + 'config.ini')
 
@@ -40,6 +41,7 @@ TABLE_ACTIVE_ITEM = DB_TABLE_PREFIX + "activeItem"
 FETCH_POST_DURATION = config.getint('background_job_duration', 'FETCH_POST')
 ENQUEUE_POSTS_DURATION = config.getint('background_job_duration', 'ENQUEUE_POSTS')
 DELETE_OLD_DATA_DURATION = config.getint('background_job_duration', 'DELETE_OLD_DATA')
+CLEAN_INACTIVE_SESSION_DURATION = config.getint('background_job_duration', 'CLEAN_INACTIVE_SESSION')
 
 FETCH_POST_MAX_RETRY = 5
 
