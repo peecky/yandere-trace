@@ -147,7 +147,6 @@ $('#previews form').submit(function(event) {
 		.find('input[name=ajax]').val(1)
 		.end()
 	$.post($this.attr('action'), $this.serialize(), function(data) {
-		alert(data);
 		var success = false;
 		try {
 			success = (data.status === 0);
