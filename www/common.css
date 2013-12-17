@@ -6,7 +6,7 @@ section#previews ul.thumbnail li span.thumbnailImage	{ display: block; padding: 
 section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middle; cursor: pointer; }
 
 section#samples	{ max-width: 100%; }
-section#samples img	{ display: block; max-width: 100%; min-width: 300px; min-height: 300px; cursor: pointer; }
+section#samples img	{ display: block; border: 8px solid gray; max-width: 100%; min-width: 300px; min-height: 300px; cursor: pointer; }
 
 @media (min-width: 1025px) {
 	html, body	{ margin: 0; padding: 0; height: 100%; }
@@ -15,5 +15,5 @@ section#samples img	{ display: block; max-width: 100%; min-width: 300px; min-hei
 	section#previews h2	{ visibility: hidden; }
 	section#previews ul.thumbnail li	{ width: 100%; }
 
-	section#samples	{ display: inline-block; width: 1500px; height: 100%; overflow: auto; }
+	section#samples	{ display: inline-block; width: 1540px; height: 100%; overflow: auto; }
 }
