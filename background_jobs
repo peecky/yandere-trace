@@ -24,7 +24,9 @@ def runJob(jobName):
 		(jobName, now, unfinishedDatetime, now ,unfinishedDatetime))
 	con.commit()
 	module = __import__(jobName)
-	module.executeJob()
+	executeJob = getattr(module, "executeJob", None)
+	if callable(executeJob):
+		executeJob()
 	now = datetime.datetime.now()
 	cur.execute('update ' + TABLE_BACKGROUND_JOBS + ' set finishedAt = %s where name = %s', (now, jobName))
 	con.commit()
