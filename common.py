@@ -4,6 +4,7 @@ import time
 import logging
 import httplib
 import socket
+import errno
 
 def buildHTTPOpener():
 	cj = cookielib.CookieJar()
