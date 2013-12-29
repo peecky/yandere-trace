@@ -10,10 +10,13 @@ section#samples img	{ display: block; border: 8px solid gray; max-width: 100%; m
 
 @media (min-width: 1025px) {
 	html, body	{ margin: 0; padding: 0; height: 100%; }
+	body	{ overflow-y: hidden; }
 	h1	{ position: fixed; }
 	section#previews	{ display: inline-block; width: 350px; height: 100%; overflow: auto; }
 	section#previews h2	{ visibility: hidden; }
 	section#previews ul.thumbnail li	{ width: 100%; }
 
 	section#samples	{ display: inline-block; width: 1540px; height: 100%; overflow: auto; }
+
+	section#bottom	{ position: fixed; left: 1em; top: 6em; }
 }
