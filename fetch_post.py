@@ -16,6 +16,10 @@ def executeJob():
 	cur = con.cursor()
 	opener = buildHTTPOpener()
 
+	inactiveLimitDate = getLastActiveDateOfUsers(cur) + datetime.timedelta(days=30)
+	if now > inactiveLimitDate:
+		return
+
 	cur.execute('select postId, postInfo, memo, addedDate from ' + TABLE_PREFETCHING_QUEUE  + ' where addedDate <= %s order by addedDate, postId limit 8', (now, ))
 	for row in cur.fetchall():
 		errorReasons = []

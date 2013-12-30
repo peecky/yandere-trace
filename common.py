@@ -45,4 +45,9 @@ def robustHTTPRequest(opener, url):
 		raise lastException
 	return False
 
+def getLastActiveDateOfUsers(cur):
+	cur.execute('select max(lastActiveDate) from ' + TABLE_USER)
+	row = cur.fetchone()
+	return row[0]
+
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] {%(levelname)s} %(message)s')
