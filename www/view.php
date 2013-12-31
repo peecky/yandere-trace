@@ -116,13 +116,15 @@ function processRequest() {
 			processRequest();
 		})
 		.click(function() {
-			var $this = $(this);
-			var position = $this.position();
-			if (position.top < 0) {
-				var scrollTop = $this.parent().scrollTop();
-				$this.parent().scrollTop(scrollTop + position.top);
-			}
-			$this.remove();
+			$(this).animate({opacity: 0}, 'fast', function() {
+				var $this = $(this);
+				var position = $this.position();
+				if (position.top < 0) {
+					var scrollTop = $this.parent().scrollTop();
+					$this.parent().scrollTop(scrollTop + position.top);
+				}
+				$(this).remove();
+			});
 		})
 		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url)
 		.appendTo($('#samples'));
@@ -136,6 +138,9 @@ function onThumbnailImageClick() {
 	}
 	requestQueue.push(postId);
 	processRequest();
+
+	$(this).css({opacity: 0.25})
+		.animate({opacity: 1}, 'slow');
 }
 
 $('#previews ul.thumbnail .thumbnailImage img').click(onThumbnailImageClick);
