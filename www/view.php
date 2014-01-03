@@ -103,6 +103,7 @@ var postMemos = {
 var requestQueue = [];
 var maxRequestConcurrency = 4;
 var processingRequests = 0;
+var oldPostIds = [];
 
 function processRequest() {
 	if (!requestQueue.length) return;
@@ -134,6 +135,14 @@ function processRequest() {
 		})
 		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url)
 		.appendTo($('#samples'));
+
+	// remove unnessasary post memos
+	if (oldPostIds.length && requestQueue.length === 0) {
+		for (var i = 0, l = oldPostIds.length; i < l; ++i) {
+			delete postMemos[oldPostIds[i]];
+		}
+		oldPostIds = [];
+	}
 }
 
 function onThumbnailImageClick() {
@@ -166,7 +175,7 @@ $('#previews form').submit(function(event) {
 		if (!success) alert(data);
 		else {
 			$('#previews ul.thumbnail').empty();
-			postMemos = {};
+			oldPostIds = Object.keys(postMemos);
 
 			$.getJSON(window.location.href, {ajax: 1}, function(posts) {
 				for (var i = 0; i < posts.length; ++i) {
