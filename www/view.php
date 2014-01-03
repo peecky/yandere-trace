@@ -112,6 +112,7 @@ function processRequest() {
 	var postId = requestQueue.shift();
 	$('<img alt="' + postId + '" />')
 		.load(function() {
+			$(this).data('isLoaded', true);
 			processingRequests--;
 			processRequest();
 		})
@@ -123,7 +124,12 @@ function processRequest() {
 					var scrollTop = $this.parent().scrollTop();
 					$this.parent().scrollTop(scrollTop + position.top);
 				}
-				$(this).remove();
+				var isLoaded = $this.data('isLoaded');
+				$this.remove();
+				if (!isLoaded) {
+					processingRequests--;
+					processRequest();
+				}
 			});
 		})
 		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url)
