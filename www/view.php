@@ -82,12 +82,12 @@ if ($session["isNormalUser"]) {
 var THUMBNAIL_DATA_PATH = "<?= THUMBNAIL_DATA_PATH ?>";
 var ORIGINAL_SERVER_BASE_ADDRESS = "<?= ORIGINAL_SERVER_BASE_ADDRESS ?>";
 
-function thumbmailPath(postInfo) {
-	return THUMBNAIL_DATA_PATH + postInfo.filename;
+function thumbmailPath(postMemo) {
+	return THUMBNAIL_DATA_PATH + postMemo.filename;
 }
 
-function originalPostUrl(postInfo) {
-	return ORIGINAL_SERVER_BASE_ADDRESS + "/post/show/" + postInfo.postId;
+function originalPostUrl(postMemo) {
+	return ORIGINAL_SERVER_BASE_ADDRESS + "/post/show/" + postMemo.postId;
 }
 
 var postMemos = {
