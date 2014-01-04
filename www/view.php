@@ -175,7 +175,11 @@ $('#previews form').submit(function(event) {
 		if (!success) alert(data);
 		else {
 			$('#previews ul.thumbnail').empty();
-			oldPostIds = Object.keys(postMemos);
+			if (!requestQueue.length) {
+				postMemos = {};
+				oldPostIds = [];
+			}
+			oldPostIds = oldPostIds.concat(Object.keys(postMemos));
 
 			$.getJSON(window.location.href, {ajax: 1}, function(posts) {
 				for (var i = 0; i < posts.length; ++i) {
