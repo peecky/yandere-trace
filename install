@@ -20,7 +20,8 @@ with con:
 		createdDate datetime not null,
 		prefetched bool not null,
 		memo VARCHAR(4096) not null,
-		lastActiveDate datetime not null
+		lastActiveDate datetime not null,
+		INDEX (prefetched, lastActiveDate)
 	)""" % (TABLE_POST))
 	cur.execute("""create table if not exists %s (
 		name VARCHAR(255) not null primary key,
