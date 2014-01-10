@@ -56,6 +56,6 @@ with con:
 		postId INT not null,
 		isRead bool not null,
 		updateDate datetime not null,
-		INDEX (userId),
+		INDEX (isRead, userId),
 		UNIQUE (userId, postId)
 	)""" % (TABLE_ACTIVE_ITEM))
