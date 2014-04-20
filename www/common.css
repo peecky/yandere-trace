@@ -1,22 +1,28 @@
+html, body	{ margin: 0; padding: 0; height: 100%; }
 ul, li	{ margin: 0; padding: 0; list-style: none; }
+
+h1	{ margin-left: 1em; }
+h2	{ margin-left: 2em; }
 
 section#previews ul.thumbnail li	{ display: inline-block; vertical-align: middle; text-align: center; }
 section#previews ul.thumbnail li:hover	{ background-color: #DDD; }
 section#previews ul.thumbnail li span.thumbnailImage	{ display: block; padding: 0.5em; }
 section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middle; cursor: pointer; }
+section#previews p	{ margin-left: 1em; }
 
 section#samples	{ max-width: 100%; }
-section#samples img	{ display: block; border: 8px solid gray; max-width: 100%; min-width: 300px; min-height: 300px; cursor: pointer; }
+section#samples img	{ display: block; -moz-box-sizing: border-box; box-sizing: border-box; border: 8px solid gray; max-width: 100%; min-width: 300px; min-height: 300px; cursor: pointer; }
+
+section#bottom	{ margin-left: 1em; padding-bottom: 1em; }
 
 @media (min-width: 1025px) {
-	html, body	{ margin: 0; padding: 0; height: 100%; }
 	body	{ overflow-y: hidden; }
-	h1	{ position: fixed; }
-	section#previews	{ display: inline-block; width: 350px; height: 100%; overflow: auto; }
+	h1	{ position: fixed; z-index: 10; }
+	section#previews	{ position: fixed; display: inline-block; -moz-box-sizing: border-box; box-sizing: border-box; padding-top: 3em; width: 350px; height: 100%; overflow: auto; }
 	section#previews h2	{ visibility: hidden; }
 	section#previews ul.thumbnail li	{ width: 100%; }
 
-	section#samples	{ display: inline-block; width: 1540px; height: 100%; overflow: auto; }
+	section#samples	{ display: inline-block; -moz-box-sizing: border-box; box-sizing: border-box; padding-left: 350px; height: 100%; overflow: auto; }
 
-	section#bottom	{ position: fixed; left: 1em; top: 6em; }
+	section#bottom	{ position: fixed; left: 1em; top: 5em; }
 }
