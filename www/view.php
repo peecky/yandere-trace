@@ -133,7 +133,7 @@ function processRequest() {
 				}
 			});
 		})
-		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url)
+		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url.replace(/%/g, '%25'))
 		.appendTo($('#samples'));
 
 	// remove unnessasary post memos
