@@ -118,8 +118,10 @@ function processRequest() {
 			processRequest();
 		})
 		.click(function() {
-			$(this).animate({opacity: 0}, 'fast', function() {
-				var $this = $(this);
+			var $this = $(this);
+			if ($this.data('isRemoving')) return;
+			$this.data('isRemoving', true);
+			$this.animate({opacity: 0}, 'fast', function() {
 				var position = $this.position();
 				if (position.top < 0) {
 					var scrollTop = $this.parent().scrollTop();
