@@ -146,6 +146,8 @@ function processRequest() {
 }
 
 function onThumbnailImageClick() {
+	var $this = $(this);
+	if ($this.css('opacity') < 0.9) return; // prevent double click
 	var postId = this.alt;
 	if (!postMemos[postId] || !postMemos[postId].sample_url) {
 		alert("sample url not found");
@@ -154,7 +156,7 @@ function onThumbnailImageClick() {
 	requestQueue.push(postId);
 	processRequest();
 
-	$(this).css({opacity: 0.25})
+	$this.css({opacity: 0.25})
 		.animate({opacity: 1}, 'slow');
 }
 
