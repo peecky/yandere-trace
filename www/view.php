@@ -5,17 +5,26 @@ require_once("function.php");
 if ($session["isNormalUser"]) {
 	$mysql = &getMysqlUtil();
 	$userId = $session["userId"];
-	$page = getGet("page", 0);
-	if (!is_numeric($page) || $page < 0) $page = 0;
+	$page = intval(getGet("page", 0));
+	if (!is_numeric($page)) $page = 0;
 
+	$queryParams = array(":userId" => $userId);
+	if ($page >= 0) {
+		$queryParams[":isRead"] = FALSE;
+		$orderBy = 'p.id';
+		$limitPage = $page;
+	}
+	else {
+		$queryParams[":isRead"] = TRUE;
+		$orderBy = 'ai.updateDate desc';
+		$limitPage = $page * -1 - 1;
+	}
 	$posts = $mysql->query("select p.id postId, p.filename, p.createdDate, p.prefetched, p.memo postMemo from " . TABLE_ACTIVE_ITEM . " ai, " . TABLE_POST . " p
 		where ai.userId = :userId
-		and ai.isRead = FALSE
+		and ai.isRead = :isRead
 		and ai.postId = p.id
-		order by p.id
-		limit " . PAGING_UNIT * $page . ", " . PAGING_UNIT, array(
-		":userId" => $userId
-	));
+		order by $orderBy
+		limit " . PAGING_UNIT * $limitPage . ", " . PAGING_UNIT, $queryParams);
 
 	if (getGet("ajax")) {
 		header('Content-type: application/json');
@@ -26,7 +35,7 @@ if ($session["isNormalUser"]) {
 	// paging URL
 	$urlPath = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 	parse_str($_SERVER["QUERY_STRING"], $urlQuery);
-	$urlQuery["page"] = ($page > 0) ? $page - 1 : 0;
+	$urlQuery["page"] = $page - 1;
 	$values["pagePreview"] = $urlPath . "?" . http_build_query($urlQuery);
 	$urlQuery["page"] = $page + 1;
 	$values["pageNext"] = $urlPath . "?" . http_build_query($urlQuery);
@@ -62,7 +71,7 @@ if ($session["isNormalUser"]) {
 		</li>
 <?php } ?>
 	</ul>
-		<p><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read</p>
+		<p class="readAction"><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read</p>
 		<input type="hidden" name="action" value="markPosts" />
 		<input type="hidden" name="ajax" value="" />
 		<?= $formInputs ?>
@@ -81,6 +90,7 @@ if ($session["isNormalUser"]) {
 (function() {
 var THUMBNAIL_DATA_PATH = "<?= THUMBNAIL_DATA_PATH ?>";
 var ORIGINAL_SERVER_BASE_ADDRESS = "<?= ORIGINAL_SERVER_BASE_ADDRESS ?>";
+var page = <?= $page ?>;
 
 function thumbmailPath(postMemo) {
 	return THUMBNAIL_DATA_PATH + postMemo.filename;
@@ -167,6 +177,8 @@ $('#previews ul.thumbnail .thumbnailImage img').click(onThumbnailImageClick);
 $('#previews form').submit(function(event) {
 	event.preventDefault();
 
+	if (page < 0) return;	// skip already read posts
+
 	var $this = $(this)
 		.find('input[name=ajax]').val(1)
 		.end()
@@ -200,6 +212,8 @@ $('#previews form').submit(function(event) {
 		}
 	});
 });
+
+if (page < 0) $('#previews form .readAction').hide();
 })();
 </script>
 </body>
