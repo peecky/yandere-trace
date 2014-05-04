@@ -137,6 +137,9 @@ function processRequest() {
 					var scrollTop = $this.parent().scrollTop();
 					$this.parent().scrollTop(scrollTop + position.top);
 				}
+				else if (position.left === 0) {
+					$('body').scrollTop(position.top);
+				}
 				var isLoaded = $this.data('isLoaded');
 				$this.remove();
 				if (!isLoaded) {
