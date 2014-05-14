@@ -204,7 +204,7 @@ $('#previews form').submit(function(event) {
 				for (var i = 0; i < posts.length; ++i) {
 					var postId = posts[i].postId;
 					var postMemo = posts[i].postMemo;
-					if (postMemo) postMemos[postId] = eval('(' + postMemo + ')');
+					if (postMemo) postMemos[postId] = JSON.parse(postMemo);
 					else postMemos[postId] = null;
 
 					$('<li><span class="thumbnailImage"><img src="' + thumbmailPath(posts[i]) + '" alt="' + posts[i].postId + '" /></span><div class="postOptions"><span><label><input type="checkbox" name="read_' + posts[i].postId + '" checked="checked" />read</label></span></div><div class="postInfo"><a href="' + originalPostUrl(posts[i]) + '" rel="noreferrer" target="_blank">See Original</a><span class="date">' + posts[i].createdDate + '</span></div></li>')
