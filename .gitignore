@@ -4,3 +4,4 @@
 _*.php
 _*.py
 config.ini
+www/robots.txt
