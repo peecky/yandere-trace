@@ -37,7 +37,7 @@ def executeJob():
 	noMorePosts = False
 	while not noMorePosts:
 		limit = 35
-		url = '%s/post.xml?limit=%d&page=%d' % (SERVER_BASE_ADDRESS, limit, page)
+		url = buildRequestURL(limit, page)
 		r = opener.open(url)
 		xmlStr = r.read()
 		postsInfoXML = ElementTree.fromstring(xmlStr)
