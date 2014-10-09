@@ -6,9 +6,9 @@ import os
 
 def executeJob():
 	now = datetime.datetime.now()
-	fileLimitDate = now - datetime.timedelta(days=64)
-	postLimitDate = now - datetime.timedelta(days=256)
-	fileDeletionLimit = 128
+	fileLimitDate = now - datetime.timedelta(days=32)
+	postLimitDate = now - datetime.timedelta(days=128)
+	fileDeletionLimit = 512
 
 	con = MySQLdb.connect(DB_HOST, DB_USER_NAME, DB_PASSWORD, DB_DB_NAME)
 	cur = con.cursor()
