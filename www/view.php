@@ -71,7 +71,7 @@ if ($session["isNormalUser"]) {
 		</li>
 <?php } ?>
 	</ul>
-		<p class="readAction"><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read</p>
+		<p class="readAction"><input type="submit" value="Mark" id="markPostSubmit" /> checked items as read (<span class="readPages">0</span> page read)</p>
 		<input type="hidden" name="action" value="markPosts" />
 		<input type="hidden" name="ajax" value="" />
 		<?= $formInputs ?>
@@ -193,6 +193,10 @@ $('#previews form').submit(function(event) {
 		catch (e) {}
 		if (!success) alert(data);
 		else {
+			var readPages = Number(sessionStorage.readPages || 0) + 1;
+			sessionStorage.readPages = readPages;
+			$('#previews form .readAction .readPages').text(readPages);
+
 			$('#previews ul.thumbnail').empty();
 			if (!requestQueue.length) {
 				postMemos = {};
@@ -218,6 +222,8 @@ $('#previews form').submit(function(event) {
 
 if (page < 0) $('#previews form .readAction').hide();
 })();
+
+$('#previews form .readAction .readPages').text(sessionStorage.reads || 0);
 </script>
 </body>
 </html>
