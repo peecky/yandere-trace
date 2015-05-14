@@ -2,11 +2,15 @@
 require_once("common.php");
 require_once("function.php");
 
+$posts = Array();
+$formInputs = '';
+$values["pageNext"] = '';
+$values["pagePreview"] = '';
+$page = intval(getGet("page", 0));
+if (!is_numeric($page)) $page = 0;
 if ($session["isNormalUser"]) {
 	$mysql = &getMysqlUtil();
 	$userId = $session["userId"];
-	$page = intval(getGet("page", 0));
-	if (!is_numeric($page)) $page = 0;
 
 	$queryParams = array(":userId" => $userId);
 	if ($page >= 0) {
