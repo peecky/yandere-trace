@@ -7,6 +7,7 @@ $formInputs = '';
 $values["pageNext"] = '';
 $values["pagePreview"] = '';
 $page = intval(getGet("page", 0));
+$pagingUnit = intval(getGet("pagingUnit", PAGING_UNIT));
 if (!is_numeric($page)) $page = 0;
 if ($session["isNormalUser"]) {
 	$mysql = &getMysqlUtil();
@@ -28,7 +29,7 @@ if ($session["isNormalUser"]) {
 		and ai.isRead = :isRead
 		and ai.postId = p.id
 		order by $orderBy
-		limit " . PAGING_UNIT * $limitPage . ", " . PAGING_UNIT, $queryParams);
+		limit " . $pagingUnit * $limitPage . ", " . $pagingUnit, $queryParams);
 
 	if (getGet("ajax")) {
 		header('Content-type: application/json');
@@ -197,7 +198,8 @@ $('#previews form').submit(function(event) {
 		catch (e) {}
 		if (!success) alert(data);
 		else {
-			var readPages = Number(sessionStorage.readPages || 0) + 1;
+			var readingPages = <?= $pagingUnit / PAGING_UNIT ?>;
+			var readPages = Number(sessionStorage.readPages || 0) + readingPages;
 			sessionStorage.readPages = readPages;
 			$('#previews form .readAction .readPages').text(readPages);
 
@@ -208,7 +210,7 @@ $('#previews form').submit(function(event) {
 			}
 			oldPostIds = oldPostIds.concat(Object.keys(postMemos));
 
-			$.getJSON(window.location.href, {ajax: 1}, function(posts) {
+			$.getJSON(window.location.href, {ajax: 1, pagingUnit: <?= $pagingUnit ?>}, function(posts) {
 				for (var i = 0; i < posts.length; ++i) {
 					var postId = posts[i].postId;
 					var postMemo = posts[i].postMemo;
