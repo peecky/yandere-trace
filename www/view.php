@@ -187,6 +187,8 @@ $('#previews form').submit(function(event) {
 
 	if (page < 0) return;	// skip already read posts
 
+	$('#previews ul.thumbnail .thumbnailImage img').css({ opacity: 0.5 }); // let user know submit button clicked
+
 	var $this = $(this)
 		.find('input[name=ajax]').val(1)
 		.end()
