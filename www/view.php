@@ -199,7 +199,7 @@ $('#previews form').submit(function(event) {
 		if (!success) alert(data);
 		else {
 			var readingPages = <?= $pagingUnit / PAGING_UNIT ?>;
-			var readPages = Number(sessionStorage.readPages) || 0 + readingPages;
+			var readPages = (Number(sessionStorage.readPages) || 0) + readingPages;
 			sessionStorage.readPages = readPages;
 			$('#previews form .readAction .readPages').text(readPages);
 
@@ -229,7 +229,7 @@ $('#previews form').submit(function(event) {
 if (page < 0) $('#previews form .readAction').hide();
 })();
 
-$('#previews form .readAction .readPages').text(sessionStorage.reads || 0);
+$('#previews form .readAction .readPages').text(sessionStorage.readPages || 0);
 </script>
 </body>
 </html>
