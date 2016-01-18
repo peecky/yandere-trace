@@ -53,9 +53,7 @@ if ($session["isNormalUser"]) {
 <meta charset="UTF-8" />
 <title><?= htmlspecialchars($values["title"]) ?></title>
 <link rel="stylesheet" href="common.css" />
-<script src="//code.jquery.com/jquery-2.0.0.min.js"></script>
-<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script><?php // required by jquery.noreferrer.js ?>
-<script src="jquery.noreferrer.js"></script>
+<script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
 </head>
 <body id="top">
 <h1><a href="/"><?= htmlspecialchars($values["title"]) ?></a></h1>
