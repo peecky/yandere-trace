@@ -8,7 +8,7 @@ section#previews ul.thumbnail li	{ display: inline-block; vertical-align: middle
 section#previews ul.thumbnail li:hover	{ background-color: #DDD; }
 section#previews ul.thumbnail li span.thumbnailImage	{ display: block; padding: 0.5em; }
 section#previews ul.thumbnail li span.thumbnailImage img	{ vertical-align: middle; cursor: pointer; }
-section#previews p	{ margin-left: 1em; }
+section#previews p	{ margin: 2em; }
 
 section#samples	{ max-width: 100%; }
 section#samples img	{ display: block; -moz-box-sizing: border-box; box-sizing: border-box; border: 8px solid gray; max-width: 100%; min-width: 300px; min-height: 300px; cursor: pointer; }
@@ -21,6 +21,7 @@ section#bottom	{ margin-left: 1em; padding-bottom: 1em; }
 	section#previews	{ position: fixed; display: inline-block; -moz-box-sizing: border-box; box-sizing: border-box; padding-top: 3em; width: 350px; height: 100%; overflow: auto; }
 	section#previews h2	{ visibility: hidden; }
 	section#previews ul.thumbnail li	{ width: 100%; }
+	section#previews p	{ margin: 1em; }
 
 	section#samples	{ display: inline-block; -moz-box-sizing: border-box; box-sizing: border-box; padding-left: 350px; height: 100%; overflow: auto; }
 
