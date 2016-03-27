@@ -61,6 +61,7 @@ if ($session["isNormalUser"]) {
 <section id="previews">
 	<h2>Preview</h2>
 	<form method="post" action="action.php">
+	<label><input type="checkbox" name="autoView" />auto view</label>
 	<ul class="thumbnail">
 <?php for ($i = 0, $loops = count($posts); $i < $loops; $i++) { ?>
 		<li><span class="thumbnailImage"><img src="<?= thumbmailPath($posts[$i]) ?>" alt="<?= $posts[$i]["postId"] ?>" /></span>
@@ -178,6 +179,17 @@ function onThumbnailImageClick() {
 		.animate({opacity: 1}, 'slow');
 }
 
+function autoView() {
+	$('#previews ul.thumbnail .thumbnailImage img').each(onThumbnailImageClick);
+}
+
+var $autoView = $('#previews form input[name="autoView"]').change(function(event) {
+	localStorage.setItem('autoView', JSON.stringify(this.checked));
+	if (this.checked) autoView();
+});
+if (JSON.parse(localStorage.getItem('autoView') || 'false')) $autoView.prop('checked', true);
+if ($autoView.prop('checked')) autoView();
+
 $('#previews ul.thumbnail .thumbnailImage img').click(onThumbnailImageClick);
 
 $('#previews form').submit(function(event) {
@@ -221,6 +233,7 @@ $('#previews form').submit(function(event) {
 						.appendTo('#previews ul.thumbnail')
 						.find('.thumbnailImage img').click(onThumbnailImageClick)
 				}
+				if ($autoView.prop('checked')) autoView();
 			});
 		}
 	});
