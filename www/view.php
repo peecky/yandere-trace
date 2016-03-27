@@ -115,7 +115,7 @@ var postMemos = {
 };
 
 var requestQueue = [];
-var maxRequestConcurrency = 4;
+var maxRequestConcurrency = 3;
 var processingRequests = 0;
 var oldPostIds = [];
 
