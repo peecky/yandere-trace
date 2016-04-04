@@ -114,13 +114,33 @@ var postMemos = {
 } ?>
 };
 
+var needToScrollToImage = false;
+
+function setScrollToImage($img) {
+	var position = $img.position();
+	if (position.top < 0) {
+		var $parent = $img.parent(), scrollTop = $parent.scrollTop();
+		$parent.scrollTop(scrollTop + position.top);
+	}
+	else if (position.left === 0) {
+		$('body').scrollTop(position.top);
+	}
+}
+
 var requestQueue = [];
 var maxRequestConcurrency = 3;
 var processingRequests = 0;
 var oldPostIds = [];
 
 function processRequest() {
-	if (!requestQueue.length) return;
+	if (!requestQueue.length) {
+		if (needToScrollToImage) {
+			needToScrollToImage = false;
+			var $img = $('#samples img:first');
+			if ($img.length > 0) setScrollToImage($img);
+		}
+		return;
+	}
 	if (processingRequests >= maxRequestConcurrency) return;
 
 	processingRequests++;
@@ -136,14 +156,7 @@ function processRequest() {
 			if ($this.data('isRemoving')) return;
 			$this.data('isRemoving', true);
 			$this.animate({opacity: 0}, 'fast', function() {
-				var position = $this.position();
-				if (position.top < 0) {
-					var scrollTop = $this.parent().scrollTop();
-					$this.parent().scrollTop(scrollTop + position.top);
-				}
-				else if (position.left === 0) {
-					$('body').scrollTop(position.top);
-				}
+				setScrollToImage($this);
 				var isLoaded = $this.data('isLoaded');
 				$this.remove();
 				if (!isLoaded) {
@@ -181,6 +194,7 @@ function onThumbnailImageClick() {
 
 function autoView() {
 	$('#previews ul.thumbnail .thumbnailImage img').each(onThumbnailImageClick);
+	needToScrollToImage = true;
 }
 
 var $autoView = $('#previews form input[name="autoView"]').change(function(event) {
