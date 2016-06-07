@@ -51,6 +51,7 @@ if ($session["isNormalUser"]) {
 <html>
 <head>
 <meta charset="UTF-8" />
+<meta name="referrer" content="same-origin" />
 <title><?= htmlspecialchars($values["title"]) ?></title>
 <link rel="stylesheet" href="common.css" />
 <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
