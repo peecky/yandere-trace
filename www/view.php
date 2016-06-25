@@ -145,29 +145,18 @@ function processRequest() {
 	if (processingRequests >= maxRequestConcurrency) return;
 
 	processingRequests++;
-	var postId = requestQueue.shift();
-	$('<img alt="' + postId + '" />')
+	var requestOption = requestQueue.shift();
+	var postId = requestOption.postId;
+	var $img = $('<img alt="' + postId + '" />')
 		.load(function() {
 			$(this).data('isLoaded', true);
 			processingRequests--;
 			processRequest();
 		})
-		.click(function() {
-			var $this = $(this);
-			if ($this.data('isRemoving')) return;
-			$this.data('isRemoving', true);
-			$this.animate({opacity: 0}, 'fast', function() {
-				setScrollToImage($this);
-				var isLoaded = $this.data('isLoaded');
-				$this.remove();
-				if (!isLoaded) {
-					processingRequests--;
-					processRequest();
-				}
-			});
-		})
+		.click(onSampleImageClick)
 		.attr("src", 'request_bridge.php?url=' + postMemos[postId].sample_url.replace(/%/g, '%25'))
 		.appendTo($('#samples'));
+	if (requestOption.byAutoView) $img.addClass('byAutoView');
 
 	// remove unnessasary post memos
 	if (oldPostIds.length && requestQueue.length === 0) {
@@ -178,6 +167,21 @@ function processRequest() {
 	}
 }
 
+function onSampleImageClick() {
+	var $this = $(this);
+	if ($this.data('isRemoving')) return;
+	$this.data('isRemoving', true);
+	$this.animate({opacity: 0}, 'fast', function() {
+		setScrollToImage($this);
+		var isLoaded = $this.data('isLoaded');
+		$this.remove();
+		if (!isLoaded) {
+			processingRequests--;
+			processRequest();
+		}
+	});
+}
+
 function onThumbnailImageClick() {
 	var $this = $(this);
 	if ($this.css('opacity') < 0.9) return; // prevent double click
@@ -186,7 +190,12 @@ function onThumbnailImageClick() {
 		alert("sample url not found");
 		return;
 	}
-	requestQueue.push(postId);
+	var requestOption = { postId: postId };
+	if ($this.data('byAutoView')) {
+		requestOption.byAutoView = true;
+		$this.removeData('byAutoView');
+	}
+	requestQueue.push(requestOption);
 	processRequest();
 
 	$this.css({opacity: 0.25})
@@ -194,13 +203,20 @@ function onThumbnailImageClick() {
 }
 
 function autoView() {
-	$('#previews ul.thumbnail .thumbnailImage img').each(onThumbnailImageClick);
+	$('#previews ul.thumbnail .thumbnailImage img')
+		.each(function() { $(this).data('byAutoView', true); })
+		.each(onThumbnailImageClick);
 	needToScrollToImage = true;
+}
+
+function removeAutoViewedImages() {
+	$('#samples img.byAutoView').each(onSampleImageClick);
 }
 
 var $autoView = $('#previews form input[name="autoView"]').change(function(event) {
 	localStorage.setItem('autoView', JSON.stringify(this.checked));
 	if (this.checked) autoView();
+	else removeAutoViewedImages();
 });
 if (JSON.parse(localStorage.getItem('autoView') || 'false')) $autoView.prop('checked', true);
 if ($autoView.prop('checked')) autoView();
