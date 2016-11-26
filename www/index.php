@@ -26,11 +26,30 @@ if ($session["isNormalUser"]) {
 <section id="signin">
 	<h2>Sign in</h2>
 	<?php printPersonaSigninModule($session, TRUE); ?>
+	<form action="action.php" method="POST">
+		<input type="hidden" name="action" value="signinWithPassword" />
+		<label>User Id: <input type="text" name="userId" /></label>
+		<label>Password: <input type="password" name="password" /></label>
+		<input type="submit" />
+	</form>
 </section>
 <?php } else { ?>
+<section id="userInfo">
+	<h2>User Info.</h2>
+	<form action="action.php" method="POST">
+		<h3>Set password</h3>
+		<input type="hidden" name="action" value="setPassword" />
+		<label>User Id: <input type="text" name="userId" value="<?= $session["userId"] ?>" disabled="disabled" /></label>
+		<label>Password: <input type="password" name="password" /></label>
+		<input type="submit" />
+	</form>
+</section>
 <section id="signout">
 	<h2>Sign out</h2>
 	<?php if ($session["authType"] == AUTH_TYPE_PERSONA) { printPersonaSigninModule($session, TRUE); } ?>
+	<?php if ($session["authType"] == AUTH_TYPE_PASSWORD) { ?>
+		<a href="logout.php">sign out</a>
+	<?php } ?>
 </section>
 	<?php if ($session["isNormalUser"]) { ?>
 <section>

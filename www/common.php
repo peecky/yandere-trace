@@ -20,9 +20,12 @@ define("TABLE_USER_AUTH", DB_TABLE_PREFIX . "userAuth");
 define("TABLE_USER_SESSION", DB_TABLE_PREFIX . "userSession");
 
 define("USER_AUTH_KEY_HASH_SALT", $setting['USER_AUTH_KEY_HASH_SALT']);
+define("PASSWORD_HASH_PEPPER", $setting['PASSWORD_HASH_PEPPER']);
+if (strlen(PASSWORD_HASH_PEPPER) < 64) exit('PASSWORD_HASH_PEPPER is too short');
 
 define("AUTH_TYPE_NONE", 0);
 define("AUTH_TYPE_PERSONA", 1);
+define("AUTH_TYPE_PASSWORD", 2);
 
 define("PAGING_UNIT", 32);
 

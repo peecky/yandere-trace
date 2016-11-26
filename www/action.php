@@ -81,6 +81,75 @@ case "signinWithPersona": {
 }
 break;
 
+case "signinWithPassword": {
+	require_once("password.php");
+	$userId = getPost("userId");
+	$password = getPost("password");
+	if (!$userId || $password === FALSE) return header("Location: signup.php");
+
+	$result = $mysql->query("select key1 from " . TABLE_USER_AUTH . "
+		where userId = :userId
+		and type = :authTypePassword", array(
+		":userId" => $userId,
+		":authTypePassword" => AUTH_TYPE_PASSWORD
+	));
+	if (empty($result)) return header("Location: signup.php");
+
+	$authKey1 = $result[0]["key1"];
+	if (!password_verify($userId . $password . PASSWORD_HASH_PEPPER, $authKey1)) return header("Location: signup.php");
+
+	$authKey = generateAuthKey($authKey1);
+	$memo = json_encode(array("authType" => AUTH_TYPE_PASSWORD, "authKey1" => $authKey1));
+	$result = $mysql->query("insert into " . TABLE_USER_SESSION . " set
+		userId = :userId,
+		authKey = :authKey,
+		authType = :authTypePassword,
+		date = FROM_UNIXTIME(:now),
+		memo = :memo", array(
+		":userId" => $userId,
+		":authKey" => $authKey,
+		":authTypePassword" => AUTH_TYPE_PASSWORD,
+		":now" => $now,
+		":memo" => $memo
+	));
+	if (!$result) {
+		exit("error: " . $mysql->getLastErrorMessage());
+	}
+
+	setcookie("userId", $userId, $now + $cookieExpires, "", "", false, true);
+	setcookie("authKey", base64_encode($authKey), $now + $cookieExpires, "", "", false, true);
+	header("Location: /");
+}
+break;
+
+case "setPassword": {
+	if (!$userId || $userId <= 0) return header("Location: /");
+	$password = getPost("password");
+	if ($password === FALSE) return header("Location: /");
+
+	require_once("password.php");
+	$authKey1 = password_hash($userId . $password . PASSWORD_HASH_PEPPER, PASSWORD_BCRYPT);
+	$result = $mysql->query("delete from " . TABLE_USER_AUTH . "
+		where userId = :userId
+		and type = :authType", array(
+		":userId" => $userId,
+		":authType" => AUTH_TYPE_PASSWORD
+	));
+	if (!$result) exit("error: " . $mysql->getLastErrorMessage());
+	$result = $mysql->query("insert into " . TABLE_USER_AUTH . " set
+		userId = :userId,
+		type = :authTypePassword,
+		key1 = :authKey1", array(
+		":userId" => $userId,
+		":authTypePassword" => AUTH_TYPE_PASSWORD,
+		":authKey1" => $authKey1
+	));
+	if (!$result) exit("error: " . $mysql->getLastErrorMessage());
+
+	header("Location: /");
+}
+break;
+
 case "signup": {
 	if($session["userId"] != 0 || empty($session["authKey"])) {
 		exit("invalid session. please sign out and sign in (or sign up) again.");
