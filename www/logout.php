@@ -13,8 +13,8 @@ if(isset($_COOKIE["userId"]) && isset($_COOKIE["authKey"])) {
 }
 $now = time();
 // unset cookies by past time
-setcookie("userId", "", $now - 3600);
-setcookie("authKey", "", $now - 3600);
+setcookie("userId", "", $now - 3600, "", "", false, true);
+setcookie("authKey", "", $now - 3600, "", "", false, true);
 
 header("Location: /");
 ?>

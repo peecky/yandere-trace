@@ -70,8 +70,8 @@ case "signinWithPersona": {
 		exit("error: " . $mysql->getLastErrorMessage());
 	}
 
-	setcookie("userId", $userId, $now + $cookieExpires);
-	setcookie("authKey", base64_encode($authKey), $now + $cookieExpires);
+	setcookie("userId", $userId, $now + $cookieExpires, "", "", false, true);
+	setcookie("authKey", base64_encode($authKey), $now + $cookieExpires, "", "", false, true);
 	if($unregisteredUser) {
 		header("Location: signup.php");
 	}
@@ -113,7 +113,7 @@ case "signup": {
 		":authKey" => $session["authKey"]
 	));
 	if (!$result) exit("error: " . $mysql->getLastErrorMessage());
-	setcookie("userId", $userId, $now + $cookieExpires);
+	setcookie("userId", $userId, $now + $cookieExpires, "", "", false, true);
 	header("Location: /");
 }
 break;
