@@ -1,61 +1,64 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import MySQLdb
 from defines import *
+from common import *
 
-con = MySQLdb.connect(DB_HOST, DB_USER_NAME, DB_PASSWORD, DB_DB_NAME)
+isMySQL = DB_ENGINE.lower() == 'mysql'
+isSqLite = DB_ENGINE.lower() == 'sqlite'
+datetimeType = isSqLite and 'timestamp' or 'datetime'
+con = getDBConnection()
 with con:
 	cur = con.cursor()
 	cur.execute("""create table if not exists %s (
 		postId INT not null,
 		postInfo MEDIUMBLOB not null,
-		addedDate datetime not null,
-		memo VARCHAR(4096) not null,
-		INDEX (addedDate)
-	)""" % (TABLE_PREFETCHING_QUEUE))
+		addedDate %s not null,
+		memo VARCHAR(4096) not null
+	)""" % (TABLE_PREFETCHING_QUEUE, datetimeType))
+	cur.execute("CREATE INDEX IF NOT EXISTS prefetching_addedDate_idx ON %s (addedDate)" % (TABLE_PREFETCHING_QUEUE,))
 	cur.execute("""create table if not exists %s (
 		id INT not null primary key,
 		filename VARCHAR(255) not null,
-		createdDate datetime not null,
+		createdDate %s not null,
 		prefetched bool not null,
 		memo VARCHAR(4096) not null,
-		lastActiveDate datetime not null,
-		INDEX (prefetched, lastActiveDate)
-	)""" % (TABLE_POST))
+		lastActiveDate %s not null
+	)""" % (TABLE_POST, datetimeType, datetimeType))
+	cur.execute("CREATE INDEX IF NOT EXISTS post_prefetched_lastActiveDate_idx ON %s (prefetched, lastActiveDate)" % (TABLE_POST,))
 	cur.execute("""create table if not exists %s (
 		name VARCHAR(255) not null primary key,
-		beginAt datetime not null,
-		finishedAt datetime not null
-	)""" % (TABLE_BACKGROUND_JOBS))
+		beginAt %s not null,
+		finishedAt %s not null
+	)""" % (TABLE_BACKGROUND_JOBS, datetimeType, datetimeType))
 	cur.execute("""create table if not exists %s (
 		`key` VARCHAR(255) not null primary key,
 		value MEDIUMTEXT not null
 	)""" % (TABLE_KEY_VALUE_STORE))
 	cur.execute("""create table if not exists %s (
-		id INT not null auto_increment primary key,
-		lastActiveDate datetime not null,
+		id INTEGER not null %s primary key %s,
+		lastActiveDate %s not null,
 		isActive bool not null
-	)""" % (TABLE_USER))
+	)""" % (TABLE_USER, isMySQL and 'auto_increment' or '', isSqLite and 'AUTOINCREMENT' or '', datetimeType))
 	cur.execute("""create table if not exists %s (
 		userId INT not null,
 		type INT not null,
-		key1 VARCHAR(255) not null,
-		INDEX (key1)
+		key1 VARCHAR(255) not null
 	)""" % (TABLE_USER_AUTH))
+	cur.execute("CREATE INDEX IF NOT EXISTS user_auth_key1_idx ON %s (key1)" % (TABLE_USER_AUTH,))
 	cur.execute("""create table if not exists %s (
 		userId INT not null,
 		authKey VARBINARY(20) not null,
 		authType INT not null,
 		memo VARCHAR(4096),
-		date datetime not null,
-		INDEX (userId)
-	)""" % (TABLE_USER_SESSION))
+		date %s not null
+	)""" % (TABLE_USER_SESSION, datetimeType))
+	cur.execute("CREATE INDEX IF NOT EXISTS user_session_userId_idx ON %s (userId)" % (TABLE_USER_SESSION,))
 	cur.execute("""create table if not exists %s (
 		userId INT not null,
 		postId INT not null,
 		isRead bool not null,
-		updateDate datetime not null,
-		INDEX (isRead, userId),
-		UNIQUE (userId, postId)
-	)""" % (TABLE_ACTIVE_ITEM))
+		updateDate %s not null
+	)""" % (TABLE_ACTIVE_ITEM, datetimeType))
+	cur.execute("CREATE INDEX IF NOT EXISTS active_item_isRead_userId_idx ON %s (isRead, userId)" % (TABLE_ACTIVE_ITEM,))
+	cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS active_item_userId_postId_idx ON %s (userId, postId)" % (TABLE_ACTIVE_ITEM,))
