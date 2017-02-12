@@ -5,6 +5,31 @@ import logging
 import httplib
 import socket
 import errno
+import sqlite3
+
+# http://stackoverflow.com/questions/23683886/python-how-to-successfully-inherit-sqlite3-cursor-and-add-my-customized-method
+class MySQLiteConnection(sqlite3.Connection):
+    def cursor(self):
+        return super(MySQLiteConnection, self).cursor(MySQLiteCursor)
+
+class MySQLiteCursor(sqlite3.Cursor):
+    def execute(self, sql, parameters=()):
+        sql = sql.replace('%s', '?')
+
+#        if parameters is None:
+#            return super(MySQLiteCursor, self).execute(sql)
+#        else:
+        return super(MySQLiteCursor, self).execute(sql, parameters)
+
+def getDBConnection():
+    if getDBConnection.con is None:
+        if DB_ENGINE.lower() == 'mysql':
+            import MySQLdb
+            getDBConnection.con = MySQLdb.connect(DB_HOST, DB_USER_NAME, DB_PASSWORD, DB_DB_NAME)
+        else:
+            getDBConnection.con = sqlite3.connect(DB_FILE_PATH, detect_types=sqlite3.PARSE_DECLTYPES, factory=MySQLiteConnection)
+    return getDBConnection.con
+getDBConnection.con = None
 
 def buildHTTPOpener():
 	cj = cookielib.CookieJar()
