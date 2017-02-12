@@ -3,5 +3,6 @@
 *.pyc
 _*.php
 _*.py
+*.db
 config.ini
 www/robots.txt

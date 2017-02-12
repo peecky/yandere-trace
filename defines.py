@@ -19,10 +19,12 @@ WWW_DATA_PATH = BASE_PATH + config.get('local_path', 'WWW_PATH') + config.get('l
 if WWW_DATA_PATH[-1] != '/':
 	WWW_DATA_PATH += '/'
 
+DB_ENGINE = config.get('database', 'DB_ENGINE')
 DB_HOST = config.get('database', 'DB_HOST')
 DB_USER_NAME = config.get('database', 'DB_USER_NAME')
 DB_PASSWORD = config.get('database', 'DB_PASSWORD')
 DB_DB_NAME = config.get('database', 'DB_DB_NAME')
+DB_FILE_PATH = config.get('database', 'DB_FILE_PATH')
 DB_TABLE_PREFIX = config.get('database', 'DB_TABLE_PREFIX')
 
 IMAGE_DATA_PATH = WWW_DATA_PATH
