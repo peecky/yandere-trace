@@ -23,6 +23,7 @@ interface PostAttribute {
     postId: number,
     filePath: string,
     isRead?: boolean,
+    updatedAt?: Date
 }
 
 interface Post extends Sequelize.Instance<PostAttribute>, PostAttribute {
@@ -36,6 +37,7 @@ const FETCH_POST_LIMIT = 10;
 const READ_POST_LIFETIME = ms('3d');
 const UNREAD_POST_LIFETIME = ms('100d');
 const DELETING_LIMIT = 100;
+const MIN_INACTIVE_DURATION = ms('15d')
 
 export = class Yandere {
     private serverBaseAddress: string;
@@ -81,6 +83,27 @@ export = class Yandere {
         .then(() => this.Post.sync())
         .then(() => callback(null))
         .catch(callback)
+    }
+
+    private isUserInactive() {
+        let isInactive: boolean;
+        return this.Post.findOne({ 
+            where: { isRead: true },
+            order: [['updatedAt', 'DESC']]
+        })
+        .then((lastReadPost: Post) => {
+            if (lastReadPost) {
+                isInactive = lastReadPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now();
+                throw null;
+            }
+
+            return this.Post.findOne({ order: [['updatedAt']]})
+        })
+        .then((oldestPost: Post) => {
+            isInactive = oldestPost && oldestPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now();
+            return isInactive;
+        })
+        .catch((err) => err ? Promise.reject(err) : Promise.resolve(isInactive))
     }
 
     private fetchPostInfos(page?: number, limit?: number) {
@@ -158,6 +181,11 @@ export = class Yandere {
         fetch()
         .then(() => {
             if (postsToFetch.length > 0) throw null; // remainings will be continued at next function call
+
+            return this.isUserInactive();
+        })
+        .then((isInactive: boolean) => {
+            if (isInactive) throw null;
 
             return this.fetchNewPostInfos()
         })
