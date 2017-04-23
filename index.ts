@@ -157,20 +157,18 @@ export = class Yandere {
 
         fetch()
         .then(() => {
-            if (postsToFetch.length > 0) return finalCallback(null); // remainings will be continued at next function call
+            if (postsToFetch.length > 0) throw null; // remainings will be continued at next function call
 
-            this.fetchNewPostInfos()
-            .then((postInfos: PostInfo[]) => {
-                if (postInfos.length === 0) return finalCallback();
-
-                postsToFetch = postInfos.sort((a, b) => Number(a.id) - Number(b.id));
-                fetch()
-                .then(() => finalCallback())
-                .catch(finalCallback);
-            })
-            .catch(finalCallback);
+            return this.fetchNewPostInfos()
         })
-        .catch(finalCallback);
+        .then((postInfos: PostInfo[]) => {
+            if (postInfos.length === 0) throw null;
+
+            postsToFetch = postInfos.sort((a, b) => Number(a.id) - Number(b.id));
+            return fetch()
+        })
+        .then(() => finalCallback())
+        .catch(finalCallback)
     }
 
     private deletePostFileData(post: Post) {
