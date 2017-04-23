@@ -4,6 +4,7 @@
   "description": "Yandere Trace ============= Did you mean: [yandere **trance**](https://www.google.com/search?q=yandere+trance)",
   "main": "index.js",
   "scripts": {
+    "postinstall": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
