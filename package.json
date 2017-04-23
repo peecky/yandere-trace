@@ -1,0 +1,37 @@
+{
+  "name": "yandere-trace",
+  "version": "1.0.0",
+  "description": "Yandere Trace ============= Did you mean: [yandere **trance**](https://www.google.com/search?q=yandere+trance)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peecky/yandere-trace.git"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/peecky/yandere-trace/issues"
+  },
+  "homepage": "https://github.com/peecky/yandere-trace#readme",
+  "dependencies": {
+    "express": "^4.15.2",
+    "fs-extra-promise": "^1.0.1",
+    "millisecond": "^0.1.2",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0",
+    "sequelize": "^3.30.4",
+    "sqlite3": "^3.1.8",
+    "xml2js-es6-promise": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.0.35",
+    "@types/request": "0.0.42",
+    "@types/request-promise": "^4.1.33",
+    "@types/sequelize": "^4.0.51",
+    "@types/sqlite3": "^2.2.33",
+    "fs-extra-promise": "^1.0.1"
+  }
+}
