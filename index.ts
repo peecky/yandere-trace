@@ -30,7 +30,7 @@ interface Post extends Sequelize.Instance<PostAttribute>, PostAttribute {
     getActualFilePath: { (): string }
 }
 
-interface ExternalCallback { (err: Error, result: { isBusy?: boolean }) }
+interface TaskCallback { (err: Error, result: { isBusy?: boolean }) }
 
 const FETCH_POST_INFO_LIMIT = 35;
 const FETCH_POST_LIMIT = 10;
@@ -150,7 +150,7 @@ export = class Yandere {
         .then(() => this.Post.create({ postId, filePath }));
     }
 
-    fetchPosts(option, callback: ExternalCallback) {
+    fetchPosts(option, callback: TaskCallback) {
         if (this.isUnderFetchingPosts) return process.nextTick(callback, null, null);
 
         this.isUnderFetchingPosts = true;
@@ -211,7 +211,7 @@ export = class Yandere {
         .then(() => post.destroy())
     }
 
-    deleteOldData(option, callback: ExternalCallback) {
+    deleteOldData(option, callback: TaskCallback) {
         let isBusy: boolean;
         this.Post.findAll({
             where: {
@@ -236,5 +236,33 @@ export = class Yandere {
         })
         .then(() => process.nextTick(callback, null, { isBusy }))
         .catch(err => callback(err, null));
+    }
+
+    getPosts(option: { page?: number, pagingUnit?: number }, callback) {
+        const page = option.page || 0;
+        const pagingUnit = option.pagingUnit || 32;
+        const offset = pagingUnit * page;
+        this.Post.findAll({
+            where: { isRead: false },
+            order: ['postId'],
+            offset,
+            limit: pagingUnit
+        })
+        .then((posts: Post[]) => {
+            const postInfos = posts.map(post => ({ postId: post.postId, src: post.filePath, filePath: post.getActualFilePath() }));
+            process.nextTick(callback, null, { postInfos });
+        })
+        .catch(callback);
+    }
+
+    markRead(option: { postIds: number[] }, callback) {
+        this.Post.update(<any>{ isRead: true },
+        {
+            where: {
+                postId: { $in: option.postIds }
+            }
+        })
+        .then(() => process.nextTick(callback, null, null))
+        .catch(callback);
     }
 }
