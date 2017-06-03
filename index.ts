@@ -249,7 +249,12 @@ export = class Yandere {
             limit: pagingUnit
         })
         .then((posts: Post[]) => {
-            const postInfos = posts.map(post => ({ postId: post.postId, src: post.filePath, filePath: post.getActualFilePath() }));
+            const postInfos = posts.map(post => ({
+                postId: post.postId,
+                src: post.filePath,
+                filePath: post.getActualFilePath(),
+                updatedAt: post.updatedAt,
+            }));
             process.nextTick(callback, null, { postInfos });
         })
         .catch(callback);
