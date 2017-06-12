@@ -23,6 +23,7 @@ interface PostAttribute {
     postId: number,
     filePath: string,
     isRead?: boolean,
+    createdAt?: Date,
     updatedAt?: Date
 }
 
@@ -34,8 +35,8 @@ interface TaskCallback { (err: Error, result: { isBusy?: boolean }) }
 
 const FETCH_POST_INFO_LIMIT = 35;
 const FETCH_POST_LIMIT = 10;
-const READ_POST_LIFETIME = ms('3d');
-const UNREAD_POST_LIFETIME = ms('100d');
+const READ_POST_FILE_LIFETIME = ms('3d');
+const POST_LIFETIME = ms('100d');
 const DELETING_LIMIT = 100;
 const MIN_INACTIVE_DURATION = ms('15d')
 
@@ -202,16 +203,18 @@ export = class Yandere {
 
     deleteOldData(option, callback: TaskCallback) {
         let isBusy: boolean;
+        const now = Date.now();
+        const removePostBeforeCreatedAt = now - POST_LIFETIME;
         this.Post.findAll({
             where: {
                 $or: [
-                    { 
+                    {
                         isRead: true,
-                        updatedAt: { $lt: new Date(Date.now() - READ_POST_LIFETIME) }
+                        filePath: { $ne: null },
+                        updatedAt: { $lt: new Date(Date.now() - READ_POST_FILE_LIFETIME) }
                     },
                     {
-                        filePath: { $ne: null },
-                        createdAt: { $lt: new Date(Date.now() - UNREAD_POST_LIFETIME) }
+                        createdAt: { $lt: new Date(removePostBeforeCreatedAt) }
                     }
                 ]
             },
@@ -220,7 +223,7 @@ export = class Yandere {
         .then((posts: Post[]) => {
             isBusy = posts.length >= DELETING_LIMIT;
             return posts.reduce((prev, post) => {
-                return prev.then(() => post.isRead ? this.deletePostData(post) : this.deletePostFileData(post));
+                return prev.then(() => Number(post.createdAt) < removePostBeforeCreatedAt ? this.deletePostData(post) : this.deletePostFileData(post));
             }, Promise.resolve());
         })
         .then(() => process.nextTick(callback, null, { isBusy }))
