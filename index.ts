@@ -86,24 +86,16 @@ export = class Yandere {
     }
 
     private isUserInactive() {
-        let isInactive: boolean;
         return this.Post.findOne({ 
             where: { isRead: true },
             order: [['updatedAt', 'DESC']]
         })
         .then((lastReadPost: Post) => {
-            if (lastReadPost) {
-                isInactive = lastReadPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now();
-                throw null;
-            }
+            if (lastReadPost) return lastReadPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now();
 
             return this.Post.findOne({ order: [['updatedAt']]})
+            .then((oldestPost: Post) => oldestPost && oldestPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now())
         })
-        .then((oldestPost: Post) => {
-            isInactive = oldestPost && oldestPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now();
-            return isInactive;
-        })
-        .catch((err) => err ? Promise.reject(err) : Promise.resolve(isInactive))
     }
 
     private fetchPostInfos(page?: number, limit?: number) {
@@ -155,13 +147,6 @@ export = class Yandere {
 
         this.isUnderFetchingPosts = true;
         let postsToFetch = this.postsToFetch;
-
-        const finalCallback = (err?) => {
-            this.postsToFetch = postsToFetch;
-            this.isUnderFetchingPosts = false;
-            process.nextTick(callback, err || null, { isBusy: !err && postsToFetch.length > 0 });
-        }
-
         let fetchedPostCount = 0;
 
         const fetch = () => {
@@ -180,23 +165,27 @@ export = class Yandere {
 
         fetch()
         .then(() => {
-            if (postsToFetch.length > 0) throw null; // remainings will be continued at next function call
+            if (postsToFetch.length > 0) return null; // remainings will be continued at next function call
 
-            return this.isUserInactive();
-        })
-        .then((isInactive: boolean) => {
-            if (isInactive) throw null;
+            return this.isUserInactive()
+            .then((isInactive) => {
+                if (isInactive) return null;
 
-            return this.fetchNewPostInfos()
-        })
-        .then((postInfos: PostInfo[]) => {
-            if (postInfos.length === 0) throw null;
+                return this.fetchNewPostInfos()
+                .then((postInfos: PostInfo[]) => {
+                    if (postInfos.length === 0) return null;
 
-            postsToFetch = postInfos.sort((a, b) => Number(a.id) - Number(b.id));
-            return fetch()
+                    postsToFetch = postInfos.sort((a, b) => Number(a.id) - Number(b.id));
+                    return fetch()
+                })
+            })
         })
-        .then(() => finalCallback())
-        .catch(finalCallback)
+        .then(() => {
+            this.postsToFetch = postsToFetch;
+            this.isUnderFetchingPosts = false;
+            process.nextTick(callback, null, { isBusy: postsToFetch.length > 0 });
+        })
+        .catch(callback)
     }
 
     private deletePostFileData(post: Post) {
