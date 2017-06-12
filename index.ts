@@ -102,12 +102,12 @@ export = class Yandere {
     private fetchPostInfos(page?: number, limit?: number) {
         return rp(`${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`)
         .then(body => xml2js(body, { explicitArray: false, mergeAttrs: true }))
-        .then((result: any) => result.posts.post);
+        .then((result) => <PostInfo[]>result.posts.post);
     }
 
     private fetchNewPostInfos() {
         return this.Post.findOne({ order: [['postId', 'DESC']] })
-        .then((lastPost: Post) => {
+        .then((lastPost) => {
             if (!lastPost) return this.fetchPostInfos(); // very begining of fetching. fetching from the last page (not the first page due to too many archived data exists)
 
             const lastPostId = lastPost.postId;
