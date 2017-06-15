@@ -3,8 +3,7 @@ import * as url from 'url';
 import * as xml2js from 'xml2js-es6-promise';
 import * as Sequelize from 'sequelize';
 import * as fs from 'fs-extra-promise';
-import * as request from 'request';
-import * as rp from 'request-promise';
+import got = require('got');
 import ms = require('millisecond');
 
 interface YandereOption {
@@ -100,8 +99,8 @@ export = class Yandere {
     }
 
     private fetchPostInfos(page?: number, limit?: number) {
-        return rp(`${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`)
-        .then(body => xml2js(body, { explicitArray: false, mergeAttrs: true }))
+        return got(`${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`)
+        .then(response => xml2js(response.body, { explicitArray: false, mergeAttrs: true }))
         .then((result) => <PostInfo[]>result.posts.post);
     }
 
@@ -136,7 +135,7 @@ export = class Yandere {
         const filePath = postInfo.md5 + ext;
         return new Promise((resolve, reject) => {
             const localPath = path.join(this.imageDataPath, filePath);
-            request(postInfo.sample_url).on('error', reject)
+            got.stream(postInfo.sample_url).on('error', reject)
             .pipe(fs.createWriteStream(localPath)).on('error', reject)
             .on('finish', () => resolve());
         })
