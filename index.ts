@@ -261,4 +261,19 @@ export = class Yandere {
         .then(() => process.nextTick(callback, null, null))
         .catch(callback);
     }
+
+    getStats(option, callback) {
+        const result: any = {};
+        this.Post.count({
+            where: {
+                isRead: false
+            }
+        })
+        .then((count) => {
+            result.unreadCount = count;
+            return;
+        })
+        .then(() => process.nextTick(callback, null, result))
+        .catch(callback);
+    }
 }
