@@ -75,7 +75,7 @@ export = class Yandere {
         })
     }
 
-    init(option, callback: { (err: Error) }) {
+    install(option, callback: { (err: Error) }) {
         Promise.all([
             fs.ensureDirAsync(path.dirname(this.dbPath)),
             fs.ensureDirAsync(this.imageDataPath)
