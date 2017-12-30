@@ -135,8 +135,10 @@ export = class Yandere {
         const filePath = postInfo.md5 + ext;
         return new Promise((resolve, reject) => {
             const localPath = path.join(this.imageDataPath, filePath);
-            got.stream(postInfo.sample_url).on('error', reject)
             if (process.env.NODE_ENV === 'development') console.log(postInfo.sample_url);
+            got.stream(postInfo.sample_url, {
+                timeout: ms('1m')
+            }).on('error', reject)
             .pipe(fs.createWriteStream(localPath)).on('error', reject)
             .on('finish', () => resolve());
         })
