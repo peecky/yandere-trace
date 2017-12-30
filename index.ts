@@ -58,7 +58,8 @@ export = class Yandere {
         this.orm = new Sequelize(null, null, null, {
             dialect: 'sqlite',
             logging: process.env.NODE_ENV === 'production' ? false : console.log,
-            storage: this.dbPath
+            storage: this.dbPath,
+            operatorsAliases: false
         });
 
         const imageDataPath = this.imageDataPath;
@@ -66,13 +67,10 @@ export = class Yandere {
             postId: { type: Sequelize.INTEGER, allowNull: false, unique: true, primaryKey: true },
             filePath: { type: Sequelize.STRING },
             isRead: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false }
-        }, {
-            instanceMethods: {
-                getActualFilePath: function() {
-                    return this.filePath ? path.join(imageDataPath, this.filePath) : this.filePath;
-                }
-            }
-        })
+        });
+        (<any>this.Post).prototype.getActualFilePath = function() {
+            return this.filePath ? path.join(imageDataPath, this.filePath) : this.filePath;
+        }
     }
 
     install(option, callback: { (err: Error) }) {
@@ -206,14 +204,14 @@ export = class Yandere {
         const removePostBeforeCreatedAt = now - POST_LIFETIME;
         this.Post.findAll({
             where: {
-                $or: [
+                [Sequelize.Op.or]: [
                     {
                         isRead: true,
-                        filePath: { $ne: null },
-                        updatedAt: { $lt: new Date(Date.now() - READ_POST_FILE_LIFETIME) }
+                        filePath: { [Sequelize.Op.ne]: null },
+                        updatedAt: { [Sequelize.Op.lt]: new Date(Date.now() - READ_POST_FILE_LIFETIME) }
                     },
                     {
-                        createdAt: { $lt: new Date(removePostBeforeCreatedAt) }
+                        createdAt: { [Sequelize.Op.lt]: new Date(removePostBeforeCreatedAt) }
                     }
                 ]
             },
@@ -255,7 +253,7 @@ export = class Yandere {
         this.Post.update(<any>{ isRead: true },
         {
             where: {
-                postId: { $in: option.postIds }
+                postId: { [Sequelize.Op.in]: option.postIds }
             }
         })
         .then(() => process.nextTick(callback, null, null))
