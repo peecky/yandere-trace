@@ -97,7 +97,9 @@ export = class Yandere {
     }
 
     private fetchPostInfos(page?: number, limit?: number) {
-        return got(`${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`)
+        const remoteURL = `${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`;
+        if (process.env.NODE_ENV === 'development') console.log(remoteURL);
+        return got(remoteURL)
         .then(response => xml2js(response.body, { explicitArray: false, mergeAttrs: true }))
         .then((result) => <PostInfo[]>result.posts.post);
     }
@@ -134,6 +136,7 @@ export = class Yandere {
         return new Promise((resolve, reject) => {
             const localPath = path.join(this.imageDataPath, filePath);
             got.stream(postInfo.sample_url).on('error', reject)
+            if (process.env.NODE_ENV === 'development') console.log(postInfo.sample_url);
             .pipe(fs.createWriteStream(localPath)).on('error', reject)
             .on('finish', () => resolve());
         })
