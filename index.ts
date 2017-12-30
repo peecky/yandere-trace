@@ -19,9 +19,9 @@ interface PostInfo {
 }
 
 interface PostAttribute {
-    postId: number,
-    filePath: string,
-    isRead?: boolean,
+    postId?: number
+    filePath?: string
+    isRead?: boolean
     createdAt?: Date,
     updatedAt?: Date
 }
@@ -193,9 +193,9 @@ export = class Yandere {
         .then(() => post.update({ filePath: null}, null))
     }
 
-    private deletePostData(post: Post) {
-        return this.deletePostFileData(post)
-        .then(() => post.destroy())
+    private async deletePostData(post: Post) {
+        await this.deletePostFileData(post);
+        await post.destroy();
     }
 
     deleteOldData(option, callback: TaskCallback) {
@@ -217,11 +217,12 @@ export = class Yandere {
             },
             limit: DELETING_LIMIT
         })
-        .then((posts: Post[]) => {
+        .then(async (posts: Post[]) => {
             isBusy = posts.length >= DELETING_LIMIT;
-            return posts.reduce((prev, post) => {
-                return prev.then(() => Number(post.createdAt) < removePostBeforeCreatedAt ? this.deletePostData(post) : this.deletePostFileData(post));
-            }, Promise.resolve());
+            for (const post of posts) {
+                if (Number(post.createdAt) < removePostBeforeCreatedAt) await this.deletePostData(post);
+                else await this.deletePostFileData(post);
+            }
         })
         .then(() => process.nextTick(callback, null, { isBusy }))
         .catch(err => callback(err, null));
@@ -250,7 +251,7 @@ export = class Yandere {
     }
 
     markRead(option: { postIds: number[] }, callback) {
-        this.Post.update(<any>{ isRead: true },
+        this.Post.update({ isRead: true },
         {
             where: {
                 postId: { [Sequelize.Op.in]: option.postIds }
@@ -261,7 +262,7 @@ export = class Yandere {
     }
 
     getStats(option, callback) {
-        const result: any = {};
+        const result: { unreadCount?: number } = {};
         this.Post.count({
             where: {
                 isRead: false
