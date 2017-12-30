@@ -161,7 +161,8 @@ export = class Yandere {
             return new Promise(resolve => setTimeout(resolve, ms('5s')))
             .then(() => this.fetchPost(postInfo))
             .then(() => {
-                postsToFetch.shift();
+                const pos = postsToFetch.indexOf(postInfo);
+                if (pos >= 0) postsToFetch.splice(pos, 1);
                 fetchedPostCount += 1;
                 return fetch();
             })
@@ -189,7 +190,10 @@ export = class Yandere {
             this.isUnderFetchingPosts = false;
             process.nextTick(callback, null, { isBusy: postsToFetch.length > 0 });
         })
-        .catch(callback)
+        .catch(err => {
+            this.isUnderFetchingPosts = false;
+            callback(err, null);
+        })
     }
 
     private deletePostFileData(post: Post) {
