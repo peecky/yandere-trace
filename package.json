@@ -18,18 +18,18 @@
   },
   "homepage": "https://github.com/peecky/yandere-trace#readme",
   "dependencies": {
-    "express": "^4.15.2",
+    "express": "^4.16.2",
     "fs-extra-promise": "^1.0.1",
-    "got": "^7.0.0",
+    "got": "^8.0.1",
     "millisecond": "^0.1.2",
-    "sequelize": "^3.30.4",
-    "sqlite3": "^3.1.8",
+    "sequelize": "^4.28.6",
+    "sqlite3": "^3.1.13",
     "xml2js-es6-promise": "^1.1.1"
   },
   "devDependencies": {
-    "@types/express": "^4.0.35",
-    "@types/fs-extra-promise": "^1.0.1",
-    "@types/sequelize": "^4.0.51",
-    "@types/sqlite3": "^2.2.33"
+    "@types/express": "^4.11.0",
+    "@types/fs-extra-promise": "^1.0.4",
+    "@types/sequelize": "^4.0.80",
+    "@types/sqlite3": "^3.1.1"
   }
 }
