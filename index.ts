@@ -158,7 +158,8 @@ export = class Yandere {
             const postInfo: PostInfo = postsToFetch[0];
             if (!postInfo) return Promise.resolve();
 
-            return this.fetchPost(postInfo)
+            return new Promise(resolve => setTimeout(resolve, ms('5s')))
+            .then(() => this.fetchPost(postInfo))
             .then(() => {
                 postsToFetch.shift();
                 fetchedPostCount += 1;
