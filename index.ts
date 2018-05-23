@@ -238,12 +238,20 @@ export = class Yandere {
         .catch(err => callback(err, null));
     }
 
-    getPosts(option: { page?: number, pagingUnit?: number }, callback) {
+    getPosts(option: {
+        page?: number
+        pagingUnit?: number
+        fromDate?: Date
+    }, callback) {
         const page = option.page || 0;
         const pagingUnit = option.pagingUnit || 32;
         const offset = pagingUnit * page;
-        this.Post.findAll({
-            where: { isRead: false },
+        const where = { isRead: false } as {
+            isRead: boolean
+            createdAt?: any
+        };
+        if (option.fromDate) where.createdAt = { [Sequelize.Op.gte]: option.fromDate };
+        this.Post.findAll({ where,
             order: ['postId'],
             offset,
             limit: pagingUnit
