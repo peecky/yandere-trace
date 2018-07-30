@@ -21,22 +21,22 @@ interface PostInfo {
 }
 
 interface PostAttribute {
-    postId?: number
-    filePath?: string
-    isRead?: boolean
-    createdAt?: Date,
-    updatedAt?: Date
+    postId: number
+    filePath: string | null
+    isRead: boolean
+    createdAt: Date,
+    updatedAt: Date
 }
 
 interface Post extends Sequelize.Instance<PostAttribute>, PostAttribute {
     getActualFilePath: () => string
 }
 
-interface PostModel extends Sequelize.Model<Post, PostAttribute> {
+interface PostModel extends Sequelize.Model<Post, Partial<PostAttribute>> {
     prototype?: any
 }
 
-interface TaskCallback { (err: Error, result: { isBusy?: boolean }) }
+interface TaskCallback { (err: Error, result: { isBusy?: boolean } | null) }
 
 const FETCH_POST_INFO_LIMIT = 100;
 const FETCH_POST_LIMIT = 10;
@@ -61,7 +61,7 @@ export = class Yandere {
         this.imageDataPath = path.join(this.dataPath, 'public', 'images');
         this.dbPath = option.dbPath;
 
-        this.orm = new Sequelize(null, null, null, {
+        this.orm = new Sequelize(null!, null!, null!, {
             dialect: 'sqlite',
             logging: process.env.NODE_ENV === 'production' ? false : console.log,
             storage: this.dbPath,
@@ -69,7 +69,7 @@ export = class Yandere {
         });
 
         const imageDataPath = this.imageDataPath;
-        this.Post = this.orm.define<Post, PostAttribute>('post', {
+        this.Post = this.orm.define<Post, Partial<PostAttribute>>('post', {
             postId: { type: Sequelize.INTEGER, allowNull: false, unique: true, primaryKey: true },
             filePath: { type: Sequelize.STRING },
             isRead: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false }
@@ -79,13 +79,13 @@ export = class Yandere {
         }
     }
 
-    install (option, callback: { (err: Error) }) {
+    install (option, callback: (err?: Error) => any) {
         Promise.all([
             fs.ensureDirAsync(path.dirname(this.dbPath)),
             fs.ensureDirAsync(this.imageDataPath)
         ])
         .then(() => this.Post.sync())
-        .then(() => callback(null))
+        .then(() => callback())
         .catch(callback)
     }
 
@@ -140,7 +140,7 @@ export = class Yandere {
 
     private fetchPost (postInfo: PostInfo) {
         const postId = Number(postInfo.id);
-        const ext = path.extname(url.parse(postInfo.sample_url).pathname);
+        const ext = path.extname(url.parse(postInfo.sample_url).pathname!);
         const filePath = postInfo.md5 + ext;
         return new Promise((resolve, reject) => {
             const localPath = path.join(this.imageDataPath, filePath);
@@ -209,7 +209,7 @@ export = class Yandere {
         const filePath = post.getActualFilePath();
         if (!filePath) return Promise.resolve();
         return fs.removeAsync(filePath)
-        .then(() => post.update({ filePath: null}, null))
+        .then(() => post.update({ filePath: null}))
     }
 
     private async deletePostData (post: Post) {

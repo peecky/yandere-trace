@@ -1,7 +1,10 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es2017"
+        "target": "es2017",
+        "noImplicitReturns": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": true
     },
     "exclude": [
         "node_modules",
