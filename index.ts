@@ -15,16 +15,20 @@ interface YandereOption {
 }
 
 interface PostInfo {
-    id: string,
-    md5: string,
+    id: string
+    md5: string
     sample_url: string
+    created_at: number
 }
 
 interface PostAttribute {
     postId: number
+    md5: string
+    remoteURL: string
+    postCreatedAt: Date
     filePath: string | null
     isRead: boolean
-    createdAt: Date,
+    createdAt: Date
     updatedAt: Date
 }
 
@@ -43,6 +47,7 @@ interface TaskCallback { (err: Error, result: TaskResult | null) }
 
 const FETCH_POST_INFO_LIMIT = 100;
 const FETCH_POST_LIMIT = 10;
+const MAX_FETCHING_FILE_COUNT = 5000;
 const READ_POST_FILE_LIFETIME = ms('3d');
 const POST_LIFETIME = ms('100d');
 const DELETING_LIMIT = 100;
@@ -55,8 +60,8 @@ export = class Yandere {
     private dbPath: string;
     private orm: Sequelize.Sequelize;
     private Post: PostModel;
-    private postsToFetch: PostInfo[] = [];
     private isUnderFetchingPosts: boolean = false;
+    private lastPostInfoFetchedAt = 0;
 
     constructor (option: YandereOption) {
         this.serverBaseAddress = option.serverBaseAddress;
@@ -74,6 +79,9 @@ export = class Yandere {
         const imageDataPath = this.imageDataPath;
         this.Post = this.orm.define<Post, Partial<PostAttribute>>('post', {
             postId: { type: Sequelize.INTEGER, allowNull: false, unique: true, primaryKey: true },
+            md5: { type: Sequelize.STRING, allowNull: false },
+            remoteURL: { type: Sequelize.STRING, allowNull: false },
+            postCreatedAt: { type: Sequelize.DATE, allowNull: false },
             filePath: { type: Sequelize.STRING },
             isRead: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false }
         });
@@ -105,8 +113,8 @@ export = class Yandere {
         })
     }
 
-    private async fetchPostInfos (page?: number, limit?: number) {
-        const remoteURL = `${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`;
+    private async fetchPostInfos (page: number = 1, limit: number = FETCH_POST_INFO_LIMIT) {
+        const remoteURL = `${this.serverBaseAddress}/post.xml?limit=${limit}&page=${page}`;
         if (process.env.NODE_ENV === 'development') console.log(remoteURL);
         const { body } = await got(remoteURL);
         const result = await xml2js(body, { explicitArray: false, mergeAttrs: true });
@@ -124,7 +132,7 @@ export = class Yandere {
             let page: number = 1;
             const limit: number = FETCH_POST_INFO_LIMIT;
 
-            const fetch = () => {
+            const fetch: () => Promise<PostInfo[]> = () => {
                 return this.fetchPostInfos(page, limit)
                 .then(postList => {
                     const postListOfPage = postList.filter((postInfo) => Number(postInfo.id) > lastPostId && !postIdsToFetch.has(postInfo.id));
@@ -141,71 +149,73 @@ export = class Yandere {
         });
     }
 
-    private fetchPost (postInfo: PostInfo) {
-        const postId = Number(postInfo.id);
-        const ext = path.extname(url.parse(postInfo.sample_url).pathname!);
-        const filePath = postInfo.md5 + ext;
-        return new Promise((resolve, reject) => {
+    private async fetchPost (post: Post) {
+        const remoteURL = post.remoteURL;
+        const ext = path.extname(url.parse(remoteURL).pathname!);
+        const filePath = post.md5 + ext;
+        await new Promise((resolve, reject) => {
             const localPath = path.join(this.imageDataPath, filePath);
-            if (process.env.NODE_ENV === 'development') console.log(postInfo.sample_url);
-            got.stream(postInfo.sample_url, {
-                timeout: ms('1m')
-            }).on('error', reject)
+            if (process.env.NODE_ENV === 'development') console.log(remoteURL);
+            got.stream(remoteURL, { timeout: ms('1m') }).on('error', reject)
             .pipe(fs.createWriteStream(localPath)).on('error', reject)
             .on('finish', () => resolve());
-        })
-        .then(() => this.Post.create({ postId, filePath }));
+        });
+        await post.update({ filePath });
     }
 
-    fetchPosts (option, callback: TaskCallback) {
-        if (this.isUnderFetchingPosts) return process.nextTick(callback, null, null);
+    private async getFetchedFileCount () {
+        return this.Post.count({
+            where: {
+                isRead: false,
+                filePath: { [Sequelize.Op.ne]: null },
+            }
+        });
+    }
 
+    public async fetchPostsAsync (): Promise<TaskResult | null> {
+        if (await this.isUserInactive()) return null;
+
+        if (this.isUnderFetchingPosts) return null;
         this.isUnderFetchingPosts = true;
-        let postsToFetch = this.postsToFetch;
-        let fetchedPostCount = 0;
 
-        const fetch = () => {
-            if (fetchedPostCount >= FETCH_POST_LIMIT) return Promise.resolve();
+        try {
+            if (Date.now() - this.lastPostInfoFetchedAt > ms('27m')) {
+                const postInfos = await this.fetchNewPostInfos();
+                if (postInfos.length > 0) await this.Post.bulkCreate(postInfos.map(postInfo => ({
+                    postId: Number(postInfo.id),
+                    md5: postInfo.md5,
+                    remoteURL: postInfo.sample_url,
+                    postCreatedAt: new Date(postInfo.created_at * 1000),
+                })));
+                this.lastPostInfoFetchedAt = Date.now();
+            }
 
-            const postInfo: PostInfo = postsToFetch[0];
-            if (!postInfo) return Promise.resolve();
+            const fetchedFileCount = await this.getFetchedFileCount();
+            if (fetchedFileCount >= MAX_FETCHING_FILE_COUNT) return null;
 
-            return new Promise(resolve => setTimeout(resolve, ms('5s')))
-            .then(() => this.fetchPost(postInfo))
-            .then(() => {
-                const pos = postsToFetch.indexOf(postInfo);
-                if (pos >= 0) postsToFetch.splice(pos, 1);
-                fetchedPostCount += 1;
-                return fetch();
-            })
-        };
+            const posts = await this.Post.findAll({
+                where: {
+                    isRead: false,
+                    filePath: null,
+                },
+                limit: FETCH_POST_LIMIT
+            });
+            for (const post of posts) {
+                await new Promise(resolve => setTimeout(resolve, ms('5s')));
+                await this.fetchPost(post);
+            }
 
-        fetch()
-        .then(() => {
-            if (postsToFetch.length > 0) return null; // remainings will be continued at next function call
-
-            return this.isUserInactive()
-            .then((isInactive) => {
-                if (isInactive) return null;
-
-                return this.fetchNewPostInfos()
-                .then((postInfos: PostInfo[]) => {
-                    if (postInfos.length === 0) return null;
-
-                    postsToFetch = postInfos.sort((a, b) => Number(a.id) - Number(b.id));
-                    return fetch()
-                })
-            })
-        })
-        .then(() => {
-            this.postsToFetch = postsToFetch;
+            const isBusy = posts.length >= FETCH_POST_LIMIT;
+            return { isBusy };
+        } finally {
             this.isUnderFetchingPosts = false;
-            process.nextTick(callback, null, { isBusy: postsToFetch.length > 0 });
-        })
-        .catch(err => {
-            this.isUnderFetchingPosts = false;
-            callback(err, null);
-        })
+        }
+    }
+
+    public fetchPosts (option, callback: TaskCallback) {
+        this.fetchPostsAsync()
+        .then(result => process.nextTick(callback, null, result))
+        .catch(err => callback(err, null));
     }
 
     private deletePostFileData (post: Post) {
@@ -253,7 +263,7 @@ export = class Yandere {
         return posts.length;
     }
 
-    public async deleteOldDataAsync () {
+    public async deleteOldDataAsync (): Promise<TaskResult> {
         let processedCount = await this.deleteOldPostFiles();
         let isBusy = processedCount >= DELETING_LIMIT;
         if (isBusy) return { isBusy };
