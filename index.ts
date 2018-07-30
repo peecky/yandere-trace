@@ -110,16 +110,19 @@ export = class Yandere {
             if (!lastPost) return this.fetchPostInfos(); // very begining of fetching. fetching from the last page (not the first page due to too many archived data exists)
 
             const lastPostId = lastPost.postId;
-            let postsToFetch: PostInfo[] = [];
+            const postsToFetch: PostInfo[] = [];
+            const postIdsToFetch = new Set<string>();
             let page: number = 1;
             const limit: number = FETCH_POST_INFO_LIMIT;
 
             const fetch = () => {
                 return this.fetchPostInfos(page, limit)
                 .then(postList => {
-                    const postListOfPage = postList.filter((postInfo: PostInfo) => Number(postInfo.id) > lastPostId);
-                    postsToFetch = postsToFetch.concat(postListOfPage);
-                    if (postListOfPage.length < limit) return postsToFetch;
+                    const postListOfPage = postList.filter((postInfo) => Number(postInfo.id) > lastPostId && !postIdsToFetch.has(postInfo.id));
+                    postsToFetch.push(...postListOfPage);
+                    postListOfPage.forEach(postInfo => postIdsToFetch.add(postInfo.id));
+
+                    if (postList.some(postInfo => Number(postInfo.id) <= lastPostId)) return postsToFetch;
 
                     page += 1;
                     return fetch();
