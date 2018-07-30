@@ -36,7 +36,10 @@ interface PostModel extends Sequelize.Model<Post, Partial<PostAttribute>> {
     prototype?: any
 }
 
-interface TaskCallback { (err: Error, result: { isBusy?: boolean } | null) }
+interface TaskResult {
+    isBusy?: boolean
+}
+interface TaskCallback { (err: Error, result: TaskResult | null) }
 
 const FETCH_POST_INFO_LIMIT = 100;
 const FETCH_POST_LIMIT = 10;
@@ -217,33 +220,57 @@ export = class Yandere {
         await post.destroy();
     }
 
-    deleteOldData (option, callback: TaskCallback) {
-        let isBusy: boolean;
-        const now = Date.now();
-        const removePostBeforeCreatedAt = now - POST_LIFETIME;
-        this.Post.findAll({
+    private async deleteOldPostFiles (option: {
+        limit?: number
+    } = {}) {
+        const { limit = DELETING_LIMIT } = option;
+
+        const posts = await this.Post.findAll({
             where: {
-                [Sequelize.Op.or]: [
-                    {
-                        isRead: true,
-                        filePath: { [Sequelize.Op.ne]: null },
-                        updatedAt: { [Sequelize.Op.lt]: new Date(Date.now() - READ_POST_FILE_LIFETIME) }
-                    },
-                    {
-                        createdAt: { [Sequelize.Op.lt]: new Date(removePostBeforeCreatedAt) }
-                    }
-                ]
+                isRead: true,
+                filePath: { [Sequelize.Op.ne]: null },
+                updatedAt: { [Sequelize.Op.lt]: new Date(Date.now() - READ_POST_FILE_LIFETIME) }
             },
-            limit: DELETING_LIMIT
-        })
-        .then(async (posts: Post[]) => {
-            isBusy = posts.length >= DELETING_LIMIT;
-            for (const post of posts) {
-                if (Number(post.createdAt) < removePostBeforeCreatedAt) await this.deletePostData(post);
-                else await this.deletePostFileData(post);
-            }
-        })
-        .then(() => process.nextTick(callback, null, { isBusy }))
+            limit
+        });
+        for (const post of posts) await this.deletePostFileData(post);
+        return posts.length;
+    }
+
+    private async deleteOldPosts (option: {
+        includeNotReadOnes?: boolean
+        limit?: number
+    } = {}) {
+        const { limit = DELETING_LIMIT } = option;
+
+        const where: Sequelize.WhereOptions<PostAttribute> = {
+            createdAt: { [Sequelize.Op.lt]: new Date(Date.now() - POST_LIFETIME) }
+        };
+        if (!option.includeNotReadOnes) where.isRead = true;
+
+        const posts = await this.Post.findAll({ where, limit });
+        for (const post of posts) await this.deletePostData(post);
+        return posts.length;
+    }
+
+    public async deleteOldDataAsync () {
+        let processedCount = await this.deleteOldPostFiles();
+        let isBusy = processedCount >= DELETING_LIMIT;
+        if (isBusy) return { isBusy };
+
+        const deletePostsIncludingNotReadOnes = await this.isUserInactive();
+        processedCount += await this.deleteOldPosts({
+            includeNotReadOnes: deletePostsIncludingNotReadOnes,
+            limit: DELETING_LIMIT - processedCount
+        });
+
+        isBusy = processedCount >= DELETING_LIMIT;
+        return { isBusy };
+    }
+
+    public deleteOldData (option, callback: TaskCallback) {
+        this.deleteOldDataAsync()
+        .then(result => process.nextTick(callback, null, result))
         .catch(err => callback(err, null));
     }
 
