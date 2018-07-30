@@ -29,7 +29,11 @@ interface PostAttribute {
 }
 
 interface Post extends Sequelize.Instance<PostAttribute>, PostAttribute {
-    getActualFilePath: { (): string }
+    getActualFilePath: () => string
+}
+
+interface PostModel extends Sequelize.Model<Post, PostAttribute> {
+    prototype?: any
 }
 
 interface TaskCallback { (err: Error, result: { isBusy?: boolean }) }
@@ -47,11 +51,11 @@ export = class Yandere {
     private imageDataPath: string;
     private dbPath: string;
     private orm: Sequelize.Sequelize;
-    private Post: Sequelize.Model<Post, PostAttribute>;
+    private Post: PostModel;
     private postsToFetch: PostInfo[] = [];
     private isUnderFetchingPosts: boolean = false;
 
-    constructor(option: YandereOption) {
+    constructor (option: YandereOption) {
         this.serverBaseAddress = option.serverBaseAddress;
         this.dataPath = option.dataPath;
         this.imageDataPath = path.join(this.dataPath, 'public', 'images');
@@ -70,12 +74,12 @@ export = class Yandere {
             filePath: { type: Sequelize.STRING },
             isRead: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false }
         });
-        (<any>this.Post).prototype.getActualFilePath = function() {
+        this.Post.prototype.getActualFilePath = function () {
             return this.filePath ? path.join(imageDataPath, this.filePath) : this.filePath;
         }
     }
 
-    install(option, callback: { (err: Error) }) {
+    install (option, callback: { (err: Error) }) {
         Promise.all([
             fs.ensureDirAsync(path.dirname(this.dbPath)),
             fs.ensureDirAsync(this.imageDataPath)
@@ -85,8 +89,8 @@ export = class Yandere {
         .catch(callback)
     }
 
-    private isUserInactive() {
-        return this.Post.findOne({ 
+    private isUserInactive () {
+        return this.Post.findOne({
             where: { isRead: true },
             order: [['updatedAt', 'DESC']]
         })
@@ -98,15 +102,15 @@ export = class Yandere {
         })
     }
 
-    private fetchPostInfos(page?: number, limit?: number) {
+    private async fetchPostInfos (page?: number, limit?: number) {
         const remoteURL = `${this.serverBaseAddress}/post.xml?limit=${limit || FETCH_POST_INFO_LIMIT}&page=${page || 1}`;
         if (process.env.NODE_ENV === 'development') console.log(remoteURL);
-        return got(remoteURL)
-        .then(response => xml2js(response.body, { explicitArray: false, mergeAttrs: true }))
-        .then((result) => <PostInfo[]>result.posts.post);
+        const { body } = await got(remoteURL);
+        const result = await xml2js(body, { explicitArray: false, mergeAttrs: true });
+        return result.posts.post as PostInfo[];
     }
 
-    private fetchNewPostInfos() {
+    private fetchNewPostInfos () {
         return this.Post.findOne({ order: [['postId', 'DESC']] })
         .then((lastPost) => {
             if (!lastPost) return this.fetchPostInfos(); // very begining of fetching. fetching from the last page (not the first page due to too many archived data exists)
@@ -134,7 +138,7 @@ export = class Yandere {
         });
     }
 
-    private fetchPost(postInfo: PostInfo) {
+    private fetchPost (postInfo: PostInfo) {
         const postId = Number(postInfo.id);
         const ext = path.extname(url.parse(postInfo.sample_url).pathname);
         const filePath = postInfo.md5 + ext;
@@ -150,7 +154,7 @@ export = class Yandere {
         .then(() => this.Post.create({ postId, filePath }));
     }
 
-    fetchPosts(option, callback: TaskCallback) {
+    fetchPosts (option, callback: TaskCallback) {
         if (this.isUnderFetchingPosts) return process.nextTick(callback, null, null);
 
         this.isUnderFetchingPosts = true;
@@ -201,19 +205,19 @@ export = class Yandere {
         })
     }
 
-    private deletePostFileData(post: Post) {
+    private deletePostFileData (post: Post) {
         const filePath = post.getActualFilePath();
         if (!filePath) return Promise.resolve();
         return fs.removeAsync(filePath)
         .then(() => post.update({ filePath: null}, null))
     }
 
-    private async deletePostData(post: Post) {
+    private async deletePostData (post: Post) {
         await this.deletePostFileData(post);
         await post.destroy();
     }
 
-    deleteOldData(option, callback: TaskCallback) {
+    deleteOldData (option, callback: TaskCallback) {
         let isBusy: boolean;
         const now = Date.now();
         const removePostBeforeCreatedAt = now - POST_LIFETIME;
@@ -243,7 +247,7 @@ export = class Yandere {
         .catch(err => callback(err, null));
     }
 
-    getPosts(option: {
+    getPosts (option: {
         page?: number
         pagingUnit?: number
         fromDate?: Date
@@ -273,7 +277,7 @@ export = class Yandere {
         .catch(callback);
     }
 
-    markRead(option: { postIds: number[] }, callback) {
+    markRead (option: { postIds: number[] }, callback) {
         this.Post.update({ isRead: true },
         {
             where: {
@@ -284,7 +288,7 @@ export = class Yandere {
         .catch(callback);
     }
 
-    getStats(option, callback) {
+    getStats (option, callback) {
         const result: { unreadCount?: number } = {};
         this.Post.count({
             where: {
