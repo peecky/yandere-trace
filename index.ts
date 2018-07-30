@@ -292,9 +292,9 @@ export = class Yandere {
         const page = option.page || 0;
         const pagingUnit = option.pagingUnit || 32;
         const offset = pagingUnit * page;
-        const where = { isRead: false } as {
-            isRead: boolean
-            createdAt?: any
+        const where: Sequelize.WhereOptions<PostAttribute> = {
+            isRead: false,
+            filePath: { [Sequelize.Op.ne]: null },
         };
         if (option.fromDate) where.createdAt = { [Sequelize.Op.gte]: option.fromDate };
         this.Post.findAll({ where,
