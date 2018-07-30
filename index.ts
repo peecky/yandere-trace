@@ -4,7 +4,9 @@ import * as xml2js from 'xml2js-es6-promise';
 import * as Sequelize from 'sequelize';
 import * as fs from 'fs-extra-promise';
 import got = require('got');
-import ms = require('millisecond');
+import millisecond = require('millisecond');
+
+const ms = (time: string | number) => millisecond(time) as number;
 
 interface YandereOption {
     serverBaseAddress: string,
