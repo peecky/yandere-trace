@@ -34,7 +34,7 @@ interface Post extends Sequelize.Instance<PostAttribute>, PostAttribute {
 
 interface TaskCallback { (err: Error, result: { isBusy?: boolean }) }
 
-const FETCH_POST_INFO_LIMIT = 35;
+const FETCH_POST_INFO_LIMIT = 100;
 const FETCH_POST_LIMIT = 10;
 const READ_POST_FILE_LIFETIME = ms('3d');
 const POST_LIFETIME = ms('100d');
