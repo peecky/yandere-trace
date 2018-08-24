@@ -258,7 +258,7 @@ export = class Yandere {
         const { limit = DELETING_LIMIT } = option;
 
         const where: Sequelize.WhereOptions<PostAttribute> = {
-            createdAt: { [Sequelize.Op.lt]: new Date(Date.now() - POST_LIFETIME) }
+            updatedAt: { [Sequelize.Op.lt]: new Date(Date.now() - POST_LIFETIME) }
         };
         if (!option.includeNotReadOnes) where.isRead = true;
 
