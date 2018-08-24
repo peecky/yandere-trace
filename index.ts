@@ -153,13 +153,17 @@ export = class Yandere {
         const remoteURL = post.remoteURL;
         const ext = path.extname(url.parse(remoteURL).pathname!);
         const filePath = post.md5 + ext;
-        await new Promise((resolve, reject) => {
-            const localPath = path.join(this.imageDataPath, filePath);
-            if (process.env.NODE_ENV === 'development') console.log(remoteURL);
-            got.stream(remoteURL, { timeout: ms('1m') }).on('error', reject)
-            .pipe(fs.createWriteStream(localPath)).on('error', reject)
-            .on('finish', () => resolve());
-        });
+        try {
+            await new Promise((resolve, reject) => {
+                const localPath = path.join(this.imageDataPath, filePath);
+                if (process.env.NODE_ENV === 'development') console.log(remoteURL);
+                got.stream(remoteURL, { timeout: ms('1m') }).on('error', reject)
+                .pipe(fs.createWriteStream(localPath)).on('error', reject)
+                .on('finish', () => resolve());
+            });
+        } catch (e) {
+            if (e.statusCode !== 404) throw e;
+        }
         await post.update({ filePath });
     }
 
