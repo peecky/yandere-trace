@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as url from 'url';
-import * as xml2js from 'xml2js-es6-promise';
+import * as xml2js from 'xml2js';
 import * as Sequelize from 'sequelize';
 import * as fs from 'fs-extra-promise';
 import got = require('got');
@@ -117,8 +117,12 @@ export = class Yandere {
         const remoteURL = `${this.serverBaseAddress}/post.xml?limit=${limit}&page=${page}`;
         if (process.env.NODE_ENV === 'development') console.log(remoteURL);
         const { body } = await got(remoteURL);
-        const result = await xml2js(body, { explicitArray: false, mergeAttrs: true });
-        return result.posts.post as PostInfo[];
+        const result = await new Promise<{
+            posts: {
+                post: PostInfo[]
+            }
+        }>((resolve, reject) => xml2js.parseString(body, { explicitArray: false, mergeAttrs: true }, (err, result) => err ? reject(err) : resolve(result)));
+        return result.posts.post;
     }
 
     private fetchNewPostInfos () {
