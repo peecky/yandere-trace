@@ -292,34 +292,42 @@ export = class Yandere {
         .catch(err => callback(err, null));
     }
 
-    getPosts (option: {
+    public async getPostsAsync (option: {
         page?: number
         pagingUnit?: number
         fromDate?: Date
-    }, callback) {
-        const page = option.page || 0;
-        const pagingUnit = option.pagingUnit || 32;
+    }) {
+        const { page = 0, pagingUnit = 32 } = option;
         const offset = pagingUnit * page;
         const where: Sequelize.WhereOptions<PostAttribute> = {
             isRead: false,
             filePath: { [Sequelize.Op.ne]: null },
         };
         if (option.fromDate) where.createdAt = { [Sequelize.Op.gte]: option.fromDate };
-        this.Post.findAll({ where,
+        const posts = await this.Post.findAll({ where,
             order: ['postId'],
             offset,
             limit: pagingUnit
-        })
-        .then((posts: Post[]) => {
-            const postInfos = posts.map(post => ({
-                postId: post.postId,
-                src: post.filePath,
-                filePath: post.getActualFilePath(),
-                updatedAt: post.updatedAt,
-            }));
-            process.nextTick(callback, null, { postInfos });
-        })
-        .catch(callback);
+        });
+
+        const postInfos = posts.map(post => ({
+            postId: post.postId,
+            src: post.filePath,
+            filePath: post.getActualFilePath(),
+            postCreatedAt: post.postCreatedAt,
+            updatedAt: post.updatedAt,
+        }));
+
+        return { postInfos };
+    }
+
+    public getPosts (option: {
+        page?: number
+        pagingUnit?: number
+        fromDate?: Date
+    }, callback) {
+        this.getPostsAsync(option)
+        .then(result => callback(null, result), callback);
     }
 
     markRead (option: { postIds: number[] }, callback) {
