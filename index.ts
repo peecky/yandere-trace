@@ -180,7 +180,9 @@ export = class Yandere {
         });
     }
 
-    public async fetchPostsAsync (): Promise<TaskResult | null> {
+    public async fetchPostsAsync (option: {
+        skipFileFetching?: boolean
+    } = {}): Promise<TaskResult | null> {
         if (await this.isUserInactive()) return null;
 
         if (this.isUnderFetchingPosts) return null;
@@ -197,6 +199,8 @@ export = class Yandere {
                 })));
                 this.lastPostInfoFetchedAt = Date.now();
             }
+
+            if (option.skipFileFetching) return null;
 
             const fetchedFileCount = await this.getFetchedFileCount();
             if (fetchedFileCount >= MAX_FETCHING_FILE_COUNT) return null;
@@ -221,7 +225,7 @@ export = class Yandere {
     }
 
     public fetchPosts (option, callback: TaskCallback) {
-        this.fetchPostsAsync()
+        this.fetchPostsAsync(option)
         .then(result => process.nextTick(callback, null, result))
         .catch(err => callback(err, null));
     }
