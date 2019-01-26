@@ -12,6 +12,7 @@ interface YandereOption {
     serverBaseAddress: string,
     dataPath: string,
     dbPath: string
+    maxFetchingFileCount?: number
 }
 
 interface PostInfo {
@@ -47,7 +48,6 @@ interface TaskCallback { (err: Error, result: TaskResult | null) }
 
 const FETCH_POST_INFO_LIMIT = 100;
 const FETCH_POST_LIMIT = 10;
-const MAX_FETCHING_FILE_COUNT = 5000;
 const READ_POST_FILE_LIFETIME = ms('3d');
 const POST_LIFETIME = ms('100d');
 const DELETING_LIMIT = 100;
@@ -58,6 +58,7 @@ export = class Yandere {
     private dataPath: string;
     private imageDataPath: string;
     private dbPath: string;
+    private maxFetchingFileCount: number;
     private orm: Sequelize.Sequelize;
     private Post: PostModel;
     private isUnderFetchingPosts: boolean = false;
@@ -68,6 +69,7 @@ export = class Yandere {
         this.dataPath = option.dataPath;
         this.imageDataPath = path.join(this.dataPath, 'public', 'images');
         this.dbPath = option.dbPath;
+        this.maxFetchingFileCount = option.maxFetchingFileCount || 5000;
 
         this.orm = new Sequelize(null!, null!, null!, {
             dialect: 'sqlite',
@@ -203,7 +205,7 @@ export = class Yandere {
             if (option.skipFileFetching) return null;
 
             const fetchedFileCount = await this.getFetchedFileCount();
-            if (fetchedFileCount >= MAX_FETCHING_FILE_COUNT) return null;
+            if (fetchedFileCount >= this.maxFetchingFileCount) return null;
 
             const posts = await this.Post.findAll({
                 where: {
