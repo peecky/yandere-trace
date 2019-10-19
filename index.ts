@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as url from 'url';
 import * as xml2js from 'xml2js';
 import * as Sequelize from 'sequelize';
-import * as fs from 'fs-extra-promise';
+import * as fs from 'fs-extra';
 import got = require('got');
 import millisecond = require('millisecond');
 
@@ -22,23 +22,21 @@ interface PostInfo {
     created_at: number
 }
 
-interface PostAttribute {
-    postId: number
-    md5: string
-    remoteURL: string
-    postCreatedAt: Date
-    filePath: string | null
-    isRead: boolean
-    createdAt: Date
-    updatedAt: Date
-}
+class Post extends Sequelize.Model {
+    public static imageDataPath: string
 
-interface Post extends Sequelize.Instance<PostAttribute>, PostAttribute {
-    getActualFilePath: () => string
-}
+    public postId!: number
+    public md5!: string
+    public remoteURL!: string
+    public postCreatedAt!: Date
+    public filePath!: string | null
+    public isRead!: boolean
+    public readonly createdAt!: Date
+    public readonly updatedAt!: Date
 
-interface PostModel extends Sequelize.Model<Post, Partial<PostAttribute>> {
-    prototype?: any
+    public getActualFilePath () {
+        return this.filePath ? path.join(Post.imageDataPath, this.filePath) : this.filePath;
+    }
 }
 
 interface TaskResult {
@@ -53,14 +51,14 @@ const POST_LIFETIME = ms('100d');
 const DELETING_LIMIT = 100;
 const MIN_INACTIVE_DURATION = ms('15d')
 
-export = class Yandere {
+export class Yandere {
     private serverBaseAddress: string;
     private dataPath: string;
     private imageDataPath: string;
     private dbPath: string;
     private maxFetchingFileCount: number;
     private orm: Sequelize.Sequelize;
-    private Post: PostModel;
+    private Post: typeof Post;
     private isUnderFetchingPosts: boolean = false;
     private lastPostInfoFetchedAt = 0;
 
@@ -71,31 +69,31 @@ export = class Yandere {
         this.dbPath = option.dbPath;
         this.maxFetchingFileCount = option.maxFetchingFileCount || 5000;
 
-        this.orm = new Sequelize(null!, null!, null!, {
+        this.orm = new Sequelize.Sequelize(null!, null!, null!, {
             dialect: 'sqlite',
             logging: process.env.NODE_ENV === 'production' ? false : console.log,
             storage: this.dbPath,
-            operatorsAliases: false
         });
 
-        const imageDataPath = this.imageDataPath;
-        this.Post = this.orm.define<Post, Partial<PostAttribute>>('post', {
+        Post.init({
             postId: { type: Sequelize.INTEGER, allowNull: false, unique: true, primaryKey: true },
             md5: { type: Sequelize.STRING, allowNull: false },
             remoteURL: { type: Sequelize.STRING, allowNull: false },
             postCreatedAt: { type: Sequelize.DATE, allowNull: false },
             filePath: { type: Sequelize.STRING },
             isRead: { type: Sequelize.BOOLEAN, allowNull: false, defaultValue: false }
+        }, {
+            sequelize: this.orm,
+            tableName: 'posts'
         });
-        this.Post.prototype.getActualFilePath = function () {
-            return this.filePath ? path.join(imageDataPath, this.filePath) : this.filePath;
-        }
+        Post.imageDataPath = this.imageDataPath;
+        this.Post = Post;
     }
 
     install (option, callback: (err?: Error) => any) {
         Promise.all([
-            fs.ensureDirAsync(path.dirname(this.dbPath)),
-            fs.ensureDirAsync(this.imageDataPath)
+            fs.ensureDir(path.dirname(this.dbPath)),
+            fs.ensureDir(this.imageDataPath)
         ])
         .then(() => this.Post.sync())
         .then(() => callback())
@@ -110,7 +108,7 @@ export = class Yandere {
         .then((lastReadPost: Post) => {
             if (lastReadPost) return lastReadPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now();
 
-            return this.Post.findOne({ order: [['updatedAt']]})
+            return this.Post.findOne({ order: ['updatedAt'] })
             .then((oldestPost: Post) => oldestPost && oldestPost.updatedAt.getTime() + MIN_INACTIVE_DURATION < Date.now())
         })
     }
@@ -235,7 +233,7 @@ export = class Yandere {
     private deletePostFileData (post: Post) {
         const filePath = post.getActualFilePath();
         if (!filePath) return Promise.resolve();
-        return fs.removeAsync(filePath)
+        return fs.remove(filePath)
         .then(() => post.update({ filePath: null}))
     }
 
@@ -267,7 +265,7 @@ export = class Yandere {
     } = {}) {
         const { limit = DELETING_LIMIT } = option;
 
-        const where: Sequelize.WhereOptions<PostAttribute> = {
+        const where: Sequelize.WhereOptions = {
             updatedAt: { [Sequelize.Op.lt]: new Date(Date.now() - POST_LIFETIME) }
         };
         if (!option.includeNotReadOnes) where.isRead = true;
@@ -305,11 +303,13 @@ export = class Yandere {
     }) {
         const { page = 0, pagingUnit = 32 } = option;
         const offset = pagingUnit * page;
-        const where: Sequelize.WhereOptions<PostAttribute> = {
+        const where: Sequelize.WhereOptions = {
             isRead: false,
             filePath: { [Sequelize.Op.ne]: null },
         };
-        if (option.fromDate) where.createdAt = { [Sequelize.Op.gte]: option.fromDate };
+        if (option.fromDate) Object.assign(where, {
+            createdAt: { [Sequelize.Op.gte]: option.fromDate }
+        });
         const posts = await this.Post.findAll({ where,
             order: ['postId'],
             offset,
