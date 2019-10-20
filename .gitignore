@@ -5,5 +5,4 @@ _*.php
 _*.py
 config.ini
 www/robots.txt
-/index.js
 test.js
