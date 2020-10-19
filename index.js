@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Yandere = void 0;
 const path = require("path");
 const url = require("url");
 const xml2js = require("xml2js");
