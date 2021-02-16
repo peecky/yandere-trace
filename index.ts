@@ -158,7 +158,7 @@ export class Yandere {
         const ext = path.extname(url.parse(remoteURL).pathname!);
         const filePath = post.md5 + ext;
         try {
-            await new Promise((resolve, reject) => {
+            await new Promise<void>((resolve, reject) => {
                 const localPath = path.join(this.imageDataPath, filePath);
                 if (process.env.NODE_ENV === 'development') console.log(remoteURL);
                 got.stream(remoteURL, { timeout: ms('1m') }).on('error', reject)
