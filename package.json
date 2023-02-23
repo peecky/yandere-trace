@@ -20,7 +20,7 @@
     "fs-extra": "^10.0.0",
     "got": "^9.6.0",
     "millisecond": "^0.1.2",
-    "sequelize": "^6.6.2",
+    "sequelize": "^6.28.2",
     "sqlite3": "^5.0.2",
     "xml2js": "^0.4.23"
   },
