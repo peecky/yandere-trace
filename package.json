@@ -21,7 +21,7 @@
     "got": "^9.6.0",
     "millisecond": "^0.1.2",
     "sequelize": "^6.29.0",
-    "sqlite3": "^5.0.2",
+    "sqlite3": "^5.1.5",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
